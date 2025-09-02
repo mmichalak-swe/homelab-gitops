@@ -3,6 +3,13 @@ services:
     image: linuxserver/pairdrop:1.11.2
     container_name: pairdrop
     hostname: pairdrop
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - RATE_LIMIT=${RATE_LIMIT}
+      - WS_FALLBACK=${WS_FALLBACK}
+      - DEBUG_MODE=${DEBUG_MODE}
     expose:
       - 3000
     healthcheck:
