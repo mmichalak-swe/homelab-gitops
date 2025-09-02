@@ -1,0 +1,35 @@
+services:
+  drawio:
+    image: jgraph/drawio:28.1.2
+    container_name: drawio
+    hostname: drawio
+    expose:
+      - 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.50
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      - 'wud.display.icon=sh:draw-io'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/jgraph/drawio/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+networks:
+  caddy-net:
+    name: caddy_caddy-net
+    external: true
