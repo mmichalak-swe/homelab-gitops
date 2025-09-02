@@ -3,8 +3,6 @@ services:
     image: linuxserver/pairdrop:1.11.2
     container_name: pairdrop
     hostname: pairdrop
-    env_file:
-      - stack.env
     expose:
       - 3000
     healthcheck:
