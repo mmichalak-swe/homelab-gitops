@@ -48,7 +48,6 @@ services:
   unbound:
     container_name: unbound
     hostname: unbound
-    # image: mvance/unbound:1.22.0
     image: klutchell/unbound:1.23.1
     restart: unless-stopped
     volumes:
