@@ -15,6 +15,7 @@ services:
       - SPEEDTEST_SCHEDULE=${SPEEDTEST_SCHEDULE}
       - SPEEDTEST_SERVERS=${SPEEDTEST_SERVERS}
       - DISPLAY_TIMEZONE=${DISPLAY_TIMEZONE}
+      - PRUNE_RESULTS_OLDER_THAN=${PRUNE_RESULTS_OLDER_THAN}
     restart: unless-stopped
     volumes:
       - data:/config
