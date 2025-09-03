@@ -14,6 +14,9 @@ services:
     # pull_policy: build
     pull_policy: never
     restart: unless-stopped
+    environment:
+      - PORKBUN_API_KEY=${PORKBUN_API_KEY}
+      - PORKBUN_API_SECRET_KEY=${PORKBUN_API_SECRET_KEY}
     expose:
       - 80
     ports:
