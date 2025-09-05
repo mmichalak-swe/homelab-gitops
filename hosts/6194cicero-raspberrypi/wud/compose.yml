@@ -1,0 +1,63 @@
+services:
+  wud:
+    image: getwud/wud:8.1.1
+    container_name: wud
+    hostname: wud
+    restart: unless-stopped
+    expose:
+      - 3000
+    environment:
+      - TZ=${TZ}
+      - WUD_SERVER_PORT=${WUD_SERVER_PORT}
+      - WUD_TRIGGER_DISCORD_1_URL=${WUD_TRIGGER_DISCORD_1_URL}
+      - WUD_WATCHER_LOCAL_SOCKET=${WUD_WATCHER_LOCAL_SOCKET}
+      - WUD_WATCHER_LOCAL_CRON=${WUD_WATCHER_LOCAL_CRON}
+      - WUD_WATCHER_LOCAL_WATCHALL=${WUD_WATCHER_LOCAL_WATCHALL}
+      - WUD_WATCHER_LOCAL_WATCHEVENTS=${WUD_WATCHER_LOCAL_WATCHEVENTS}
+      - WUD_WATCHER_LOCAL_WATCHATSTART=${WUD_WATCHER_LOCAL_WATCHATSTART}
+      - WUD_LOG_LEVEL=${WUD_LOG_LEVEL}
+      - WUD_REGISTRY_HUB_PUBLIC_AUTH=${WUD_REGISTRY_HUB_PUBLIC_AUTH}
+      - WUD_AUTH_OIDC_AUTHELIA_DISCOVERY=${WUD_AUTH_OIDC_AUTHELIA_DISCOVERY}
+      - WUD_AUTH_OIDC_AUTHELIA_CLIENTID=${WUD_AUTH_OIDC_AUTHELIA_CLIENTID}
+      - WUD_AUTH_OIDC_AUTHELIA_CLIENTSECRET=${WUD_AUTH_OIDC_AUTHELIA_CLIENTSECRET}
+      - WUD_WATCHER_GMKG3_HOST=${WUD_WATCHER_GMKG3_HOST}
+      - WUD_WATCHER_GMKG3_PORT=${WUD_WATCHER_GMKG3_PORT}
+      - WUD_WATCHER_GMKG3_CAFILE=${WUD_WATCHER_GMKG3_CAFILE}
+      - WUD_WATCHER_GMKG3_CERTFILE=${WUD_WATCHER_GMKG3_CERTFILE}
+      - WUD_WATCHER_GMKG3_KEYFILE=${WUD_WATCHER_GMKG3_KEYFILE}
+      - WUD_WATCHER_GMKG3_CRON=${WUD_WATCHER_GMKG3_CRON}
+      - WUD_WATCHER_GMKG3_WATCHALL=${WUD_WATCHER_GMKG3_WATCHALL}
+      - WUD_WATCHER_GMKG3_WATCHEVENTS=${WUD_WATCHER_GMKG3_WATCHEVENTS}
+      - WUD_WATCHER_GMKG3_WATCHATSTART=${WUD_WATCHER_GMKG3_WATCHATSTART}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$WUD_SERVER_PORT/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - store:/store
+      - certs:/certs
+    networks:
+      pihole-net:
+        ipv4_address: 172.18.0.30
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "64m"
+    labels:
+      - 'wud.display.icon=sh:wud'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}'
+
+
+networks:
+  pihole-net:
+    name: pihole_docker_pihole-net
+    external: true
+
+
+volumes:
+  store:
+  certs:
