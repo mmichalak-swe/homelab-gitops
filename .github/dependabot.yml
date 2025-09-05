@@ -7,6 +7,6 @@ version: 2
 updates:
   - package-ecosystem: "docker-compose"
     directories:
-      - "/hosts/**"
+      - "/hosts/*/*"
     schedule:
       interval: "daily"
