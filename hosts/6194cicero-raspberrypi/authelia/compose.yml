@@ -1,0 +1,45 @@
+services:
+  authelia:
+    container_name: authelia
+    hostname: authelia
+    image: authelia/authelia:4.39.7
+    restart: unless-stopped
+    expose:
+      - 9091
+    environment:
+      TZ: America/New_York
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/JWT_SECRET
+      AUTHELIA_SESSION_SECRET_FILE: /secrets/SESSION_SECRET
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
+    volumes:
+      - config:/config
+      - secrets:/secrets
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9091/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      pihole-net:
+        ipv4_address: 172.18.0.4
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 256m
+    mem_limit: 512m
+    labels:
+      - 'wud.display.icon=sh:authelia'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/authelia/authelia/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+networks:
+  pihole-net:
+    name: pihole_docker_pihole-net
+    external: true
+
+
+volumes:
+  config:
+  secrets:
