@@ -9,7 +9,7 @@ updates:
     directories:
       - "/hosts/*/*"
     exclude-paths:
-      - "/hosts/*/caddy"
+      - "hosts/*/caddy"
     schedule:
       interval: "cron"
       cronjob: "30 11 * * *"
