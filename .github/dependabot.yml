@@ -8,6 +8,8 @@ updates:
   - package-ecosystem: "docker-compose"
     directories:
       - "/hosts/*/*"
+    exclude-paths:
+      - "/hosts/*/caddy"
     schedule:
       interval: "cron"
       cronjob: "30 11 * * *"
