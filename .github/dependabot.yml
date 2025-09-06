@@ -8,8 +8,8 @@ updates:
   - package-ecosystem: "docker-compose"
     directories:
       - "/hosts/*/*"
-    exclude-paths:
-      - "hosts/*/caddy"
+    ignore:
+      - dependency-name: "caddy-*:*" 
     schedule:
       interval: "cron"
       cronjob: "30 11 * * *"
