@@ -9,4 +9,6 @@ updates:
     directories:
       - "/hosts/*/*"
     schedule:
-      interval: "daily"
+      interval: "cron"
+      cronjob: "30 11 * * *"
+      timezone: "America/New_York"
