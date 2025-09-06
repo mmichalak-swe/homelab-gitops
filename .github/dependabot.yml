@@ -9,7 +9,7 @@ updates:
     directories:
       - "/hosts/*/*"
     ignore:
-      - dependency-name: "caddy-*:*" 
+      - dependency-name: "caddy-*" 
     schedule:
       interval: "cron"
       cronjob: "30 11 * * *"
