@@ -14,3 +14,10 @@ updates:
       interval: "cron"
       cronjob: "30 11 * * *"
       timezone: "America/New_York"
+  - package-ecosystem: "docker"
+    directories:
+      - "/Dockerfiles/*"
+    schedule:
+      interval: "cron"
+      cronjob: "35 11 * * 1"
+      timezone: "America/New_York"
