@@ -1,6 +1,6 @@
 services:
   speedtest:
-    image: linuxserver/speedtest-tracker:1.6.7
+    image: linuxserver/speedtest-tracker:1.6.8
     container_name: speedtest
     hostname: speedtest
     expose:
