@@ -3,7 +3,7 @@ services:
   pihole-gmkg3:
     container_name: pihole-gmkg3
     hostname: pihole-gmkg3
-    image: pihole/pihole:2025.10.2
+    image: pihole/pihole:2025.10.3
     # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
     ports:
       - "53:53/tcp"
