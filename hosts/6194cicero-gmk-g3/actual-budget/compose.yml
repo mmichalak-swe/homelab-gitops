@@ -2,7 +2,7 @@ services:
   actual_server:
     container_name: actual-server
     hostname: actual-server
-    image: actualbudget/actual-server:25.10.0-alpine
+    image: actualbudget/actual-server:25.11.0-alpine
     restart: unless-stopped
     expose:
       - 5006
