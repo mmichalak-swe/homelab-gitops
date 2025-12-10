@@ -1,0 +1,38 @@
+services:
+  wireguard:
+    image: ghcr.io/wg-easy/wg-easy:14
+    container_name: wireguard
+    hostname: wireguard
+    environment:
+      - LANG=${LANG}
+      - WG_HOST=${WG_HOST}
+      - PASSWORD_HASH=${PASSWORD_HASH}
+      - PORT=${PORT}
+      - WG_PORT=${WG_PORT}
+      - WG_DEFAULT_ADDRESS=${WG_DEFAULT_ADDRESS}
+      - WG_DEFAULT_DNS=${WG_DEFAULT_DNS}
+      - WG_ALLOWED_IPS=${WG_ALLOWED_IPS}
+      - UI_TRAFFIC_STATS=${UI_TRAFFIC_STATS}
+      - UI_CHART_TYPE=${UI_CHART_TYPE}
+    restart: unless-stopped
+    volumes:
+      - etc_wireguard:/etc/wireguard
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "64m"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      - 'wud.display.icon=sh:wireguard'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/wg-easy/wg-easy/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+volumes:
+  etc_wireguard:
