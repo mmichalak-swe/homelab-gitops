@@ -1,6 +1,6 @@
 services:
   drawio:
-    image: jgraph/drawio:29.2.2
+    image: jgraph/drawio:29.2.7
     container_name: drawio
     hostname: drawio
     expose:
