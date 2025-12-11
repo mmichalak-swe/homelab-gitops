@@ -1,4 +1,4 @@
-name: Trivy Combined Scan for Dependabot PRs to Main
+name: Trivy Scan Dependabot PRs
 
 on:
   pull_request:
@@ -10,15 +10,15 @@ permissions:
   security-events: write
 
 jobs:
-  trivy-scan:
-    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
+  trivy:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
 
     steps:
       - uses: actions/checkout@v4
 
       #########################
-      # Install dependencies
+      # Install yq
       #########################
       - name: Install yq
         run: |
@@ -26,16 +26,11 @@ jobs:
             https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Install Trivy
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          version: latest
-
       #########################
-      # Detect changed compose files
+      # Detect changed compose file
       #########################
       - name: Find changed compose files
-        id: changes
+        id: changed
         uses: tj-actions/changed-files@v44
         with:
           files: |
@@ -43,121 +38,95 @@ jobs:
             **/compose.yaml
 
       #########################
-      # Stop workflow if no compose files changed
+      # Extract bumped image
       #########################
-      - name: Exit early if no compose files changed
-        if: steps.changes.outputs.all_changed_files == ''
-        run: echo "No compose files changed. Exiting workflow."
+      - name: Extract bumped image
+        id: image
+        run: |
+          FILE="${{ steps.changed.outputs.all_changed_files }}"
+          if [ -z "$FILE" ]; then
+            echo "image=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-      - name: Comment and exit when no compose changes
-        if: steps.changes.outputs.all_changed_files == ''
-        uses: marocchino/sticky-pull-request-comment@v2
+          IMG=$(yq '.services.*.image' "$FILE" | grep -v null | head -n 1)
+          echo "Image found: $IMG"
+          echo "image=$IMG" >> $GITHUB_OUTPUT
+
+      - name: Stop if no image found
+        if: steps.image.outputs.image == ''
+        run: echo "No image found — exiting."
+
+      #########################
+      # Run Trivy scans
+      #########################
+      - name: Run Trivy (table output)
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          header: trivy-scan
-          message: |
-            No compose files were modified in this PR, so no container images required scanning.
-        continue-on-error: false
+          image-ref: ${{ steps.image.outputs.image }}
+          format: table
+          output: trivy-table.txt
+          exit-code: 0
+
+      - name: Run Trivy (SARIF output)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ steps.image.outputs.image }}
+          format: sarif
+          output: trivy.sarif
+          exit-code: 0
 
       #########################
-      # Extract images from changed compose files
+      # Upload SARIF + table artifact
       #########################
-      - name: Extract images
-        id: images
-        run: |
-          IMAGES=""
-
-          for file in ${{ steps.changes.outputs.all_changed_files }}; do
-            imgs=$(yq '.services.*.image' "$file" | grep -v null || true)
-            IMAGES="$IMAGES"$'\n'"$imgs"
-          done
-
-          echo "IMAGES<<EOF" >> $GITHUB_OUTPUT
-          printf "%s\n" "$IMAGES" | grep -v '^$' | sort -u >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      #########################
-      # Run Trivy scans (text + SARIF)
-      #########################
-      - name: Run Trivy scans
-        run: |
-          mkdir -p trivy-text trivy-sarif
-
-          while read -r img; do
-            [ -z "$img" ] && continue
-
-            safe=$(echo "$img" | tr '/:' '_')
-            echo "Scanning $img..."
-
-            trivy image \
-              --format table \
-              "$img" \
-              > "trivy-text/${safe}.txt" || true
-
-            trivy image \
-              --format sarif \
-              --output "trivy-sarif/${safe}.sarif" \
-              "$img" || true
-
-          done <<< "${{ steps.images.outputs.IMAGES }}"
-
-      #########################
-      # Upload SARIF for GitHub Code Scanning
-      #########################
-      - name: Upload SARIF results
+      - name: Upload SARIF result
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy-sarif
+          sarif_file: trivy.sarif
 
-      ########################
-      # Upload text reports as artifacts
-      ########################
-      - name: Upload Trivy text reports
+      - name: Upload table report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-text
-          path: trivy-text
+          name: trivy-table
+          path: trivy-table.txt
           retention-days: 30
 
       #########################
-      # Summarize HIGH + CRITICAL vulns
+      # Generate a simple summary
       #########################
-      - name: Summarize HIGH + CRITICAL vulns
+      - name: Generate summary of HIGH/CRITICAL vulns
         id: summary
         run: |
-          echo "| Image | HIGH | CRITICAL |" > summary.md
-          echo "|-------|------|----------|" >> summary.md
+          HIGH=$(grep -c "HIGH" trivy-table.txt || true)
+          CRIT=$(grep -c "CRITICAL" trivy-table.txt || true)
 
-          for f in trivy-text/*.txt; do
-            image=$(basename "$f" .txt | tr '_' '/')
-            high=$(grep -c "HIGH" "$f" || true)
-            critical=$(grep -c "CRITICAL" "$f" || true)
-            echo "| $image | $high | $critical |" >> summary.md
-          done
-
-          echo "SUMMARY<<EOF" >> $GITHUB_OUTPUT
-          cat summary.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "crit=$CRIT" >> $GITHUB_OUTPUT
 
       #########################
-      # Post PR comment summary
+      # PR Comment
       #########################
-      - name: Comment on PR with summary + details
+      - name: Comment on PR with scan summary
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: trivy-scan
           message: |
-            ## Trivy Vulnerability Scan Summary (Dependabot PR → main)
+            ## 🔍 Trivy Scan Summary (Dependabot → main)
 
-            Below is a summary of **HIGH** and **CRITICAL** vulnerabilities
-            found in the updated container images:
+            **Image Scanned:**  
+            `${{ steps.image.outputs.image }}`
 
-            ${{ steps.summary.outputs.SUMMARY }}
+            ### 🛡 Vulnerabilities
+            | Severity | Count |
+            |----------|-------|
+            | HIGH | `${{ steps.summary.outputs.high }}` |
+            | CRITICAL | `${{ steps.summary.outputs.crit }}` |
 
-            ### Full Reports
-            **Workflow Artifacts (Full Trivy Reports)**  
+            ### 📄 Full Reports
+            **Workflow Artifacts (Full Trivy Table Output)**  
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
 
-            **SARIF Security Report (GitHub Code Scanning)**  
+            **SARIF Security Dashboard**  
             ${{ github.server_url }}/${{ github.repository }}/security/code-scanning
 
-            _This scan is informational only and does not block merges._
+            _This scan does not block merges — informational only._
