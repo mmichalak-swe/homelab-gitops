@@ -26,10 +26,15 @@ jobs:
             https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          version: latest
+
       #########################
       # Detect changed compose files
       #########################
-      - name: Find changed docker compose files
+      - name: Find changed compose files
         id: changes
         uses: tj-actions/changed-files@v44
         with:
@@ -42,7 +47,7 @@ jobs:
       #########################
       - name: Exit early if no compose files changed
         if: steps.changes.outputs.all_changed_files == ''
-        run: echo "No docker-compose files changed. Exiting workflow."
+        run: echo "No compose files changed. Exiting workflow."
 
       - name: Comment and exit when no compose changes
         if: steps.changes.outputs.all_changed_files == ''
@@ -50,7 +55,7 @@ jobs:
         with:
           header: trivy-scan
           message: |
-            No Docker Compose files were modified in this PR, so no container images required scanning.
+            No compose files were modified in this PR, so no container images required scanning.
         continue-on-error: false
 
       #########################
@@ -60,13 +65,14 @@ jobs:
         id: images
         run: |
           IMAGES=""
+
           for file in ${{ steps.changes.outputs.all_changed_files }}; do
-            imgs=$(yq '.services.*.image' "$file" || true)
+            imgs=$(yq '.services.*.image' "$file" | grep -v null || true)
             IMAGES="$IMAGES"$'\n'"$imgs"
           done
 
           echo "IMAGES<<EOF" >> $GITHUB_OUTPUT
-          echo "$IMAGES" | sort -u >> $GITHUB_OUTPUT
+          printf "%s\n" "$IMAGES" | grep -v '^$' | sort -u >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       #########################
@@ -79,7 +85,7 @@ jobs:
           while read -r img; do
             [ -z "$img" ] && continue
 
-            safe=$(echo $img | tr '/:' '_')
+            safe=$(echo "$img" | tr '/:' '_')
             echo "Scanning $img..."
 
             trivy image \
@@ -98,9 +104,19 @@ jobs:
       # Upload SARIF for GitHub Code Scanning
       #########################
       - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-sarif
+
+      ########################
+      # Upload text reports as artifacts
+      ########################
+      - name: Upload Trivy text reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-text
+          path: trivy-text
+          retention-days: 30
 
       #########################
       # Summarize HIGH + CRITICAL vulns
@@ -138,14 +154,10 @@ jobs:
             ${{ steps.summary.outputs.SUMMARY }}
 
             ### Full Reports
-            You can download and inspect the complete Trivy outputs here:
-
             **Workflow Artifacts (Full Trivy Reports)**  
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
 
             **SARIF Security Report (GitHub Code Scanning)**  
-            View in: *Security → Code Scanning Alerts*  
-            or visit directly:  
             ${{ github.server_url }}/${{ github.repository }}/security/code-scanning
 
-            _This scan is informational only and **does not block merges**._
+            _This scan is informational only and does not block merges._
