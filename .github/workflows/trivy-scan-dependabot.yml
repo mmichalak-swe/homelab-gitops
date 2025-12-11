@@ -1,0 +1,151 @@
+name: Trivy Combined Scan for Dependabot PRs to Main
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  trivy-scan:
+    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      #########################
+      # Install dependencies
+      #########################
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      #########################
+      # Detect changed compose files
+      #########################
+      - name: Find changed docker compose files
+        id: changes
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/compose.yml
+            **/compose.yaml
+
+      #########################
+      # Stop workflow if no compose files changed
+      #########################
+      - name: Exit early if no compose files changed
+        if: steps.changes.outputs.all_changed_files == ''
+        run: echo "No docker-compose files changed. Exiting workflow."
+
+      - name: Comment and exit when no compose changes
+        if: steps.changes.outputs.all_changed_files == ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: trivy-scan
+          message: |
+            No Docker Compose files were modified in this PR, so no container images required scanning.
+        continue-on-error: false
+
+      #########################
+      # Extract images from changed compose files
+      #########################
+      - name: Extract images
+        id: images
+        run: |
+          IMAGES=""
+          for file in ${{ steps.changes.outputs.all_changed_files }}; do
+            imgs=$(yq '.services.*.image' "$file" || true)
+            IMAGES="$IMAGES"$'\n'"$imgs"
+          done
+
+          echo "IMAGES<<EOF" >> $GITHUB_OUTPUT
+          echo "$IMAGES" | sort -u >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      #########################
+      # Run Trivy scans (text + SARIF)
+      #########################
+      - name: Run Trivy scans
+        run: |
+          mkdir -p trivy-text trivy-sarif
+
+          while read -r img; do
+            [ -z "$img" ] && continue
+
+            safe=$(echo $img | tr '/:' '_')
+            echo "Scanning $img..."
+
+            trivy image \
+              --format table \
+              "$img" \
+              > "trivy-text/${safe}.txt" || true
+
+            trivy image \
+              --format sarif \
+              --output "trivy-sarif/${safe}.sarif" \
+              "$img" || true
+
+          done <<< "${{ steps.images.outputs.IMAGES }}"
+
+      #########################
+      # Upload SARIF for GitHub Code Scanning
+      #########################
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-sarif
+
+      #########################
+      # Summarize HIGH + CRITICAL vulns
+      #########################
+      - name: Summarize HIGH + CRITICAL vulns
+        id: summary
+        run: |
+          echo "| Image | HIGH | CRITICAL |" > summary.md
+          echo "|-------|------|----------|" >> summary.md
+
+          for f in trivy-text/*.txt; do
+            image=$(basename "$f" .txt | tr '_' '/')
+            high=$(grep -c "HIGH" "$f" || true)
+            critical=$(grep -c "CRITICAL" "$f" || true)
+            echo "| $image | $high | $critical |" >> summary.md
+          done
+
+          echo "SUMMARY<<EOF" >> $GITHUB_OUTPUT
+          cat summary.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      #########################
+      # Post PR comment summary
+      #########################
+      - name: Comment on PR with summary + details
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: trivy-scan
+          message: |
+            ## Trivy Vulnerability Scan Summary (Dependabot PR → main)
+
+            Below is a summary of **HIGH** and **CRITICAL** vulnerabilities
+            found in the updated container images:
+
+            ${{ steps.summary.outputs.SUMMARY }}
+
+            ### Full Reports
+            You can download and inspect the complete Trivy outputs here:
+
+            **Workflow Artifacts (Full Trivy Reports)**  
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+
+            **SARIF Security Report (GitHub Code Scanning)**  
+            View in: *Security → Code Scanning Alerts*  
+            or visit directly:  
+            ${{ github.server_url }}/${{ github.repository }}/security/code-scanning
+
+            _This scan is informational only and **does not block merges**._
