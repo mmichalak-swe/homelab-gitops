@@ -147,7 +147,7 @@ jobs:
           echo "" >> comment.md
           echo "Images scanned:" >> comment.md
           echo '```' >> comment.md
-          jq -r '.[]' <<< '${{ needs.discover-images.outputs.images }}' >> comment.md
+          printf '%s' '${{ needs.discover-images.outputs.images }}' | jq -r '.[]' >> comment.md
           echo '```' >> comment.md
           echo "" >> comment.md
           echo "### Per-image vulnerabilities" >> comment.md
