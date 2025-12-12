@@ -23,9 +23,7 @@ jobs:
           version: '1.7.1'
 
       - name: Install yq
-        uses: mikefarah/yq-action@v2
-        with:
-          version: 'v4'
+        uses: mikefarah/yq@v4
 
       - name: Find changed compose files
         id: changed
