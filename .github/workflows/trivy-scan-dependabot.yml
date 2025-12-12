@@ -15,7 +15,7 @@ jobs:
     outputs:
       images: ${{ steps.images.outputs.images_json }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install jq
         uses: dcarbone/install-jq-action@v3
@@ -27,7 +27,7 @@ jobs:
 
       - name: Find changed compose files
         id: changed
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             **/compose.yml
@@ -63,13 +63,13 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.discover-images.outputs.images) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set weekly cache key
         run: echo "WEEK=$(date +'%G%V')" >> "$GITHUB_ENV"
 
       - name: Cache Trivy DB (rotates weekly)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/trivy
           key: trivy-db-${{ runner.os }}-${{ env.WEEK }}
@@ -108,14 +108,14 @@ jobs:
           } > "summary-${SAFE}.txt"
 
       - name: Upload per-image JSON
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: trivy-json-${{ env.SAFE }}
           path: trivy.json
           retention-days: 30
 
       - name: Upload per-image summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: trivy-summary-${{ env.SAFE }}
           path: summary-${{ env.SAFE }}.txt
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install jq
         uses: dcarbone/install-jq-action@v3
@@ -134,7 +134,7 @@ jobs:
           version: '1.7.1'
 
       - name: Download summaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: summaries
 
