@@ -7,28 +7,26 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  security-events: write
 
 jobs:
-  trivy:
+  discover-images:
     runs-on: ubuntu-latest
     if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
-
+    outputs:
+      images: ${{ steps.images.outputs.images_json }}
     steps:
       - uses: actions/checkout@v4
 
-      #########################
-      # Install yq
-      #########################
-      - name: Install yq
-        run: |
-          sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v3
+        with:
+          version: '1.7.1'
 
-      #########################
-      # Detect changed compose file
-      #########################
+      - name: Install yq
+        uses: mikefarah/yq-action@v2
+        with:
+          version: 'v4'
+
       - name: Find changed compose files
         id: changed
         uses: tj-actions/changed-files@v44
@@ -37,96 +35,148 @@ jobs:
             **/compose.yml
             **/compose.yaml
 
-      #########################
-      # Extract bumped image
-      #########################
-      - name: Extract bumped image
-        id: image
+      - name: Extract images from changed compose files
+        id: images
         run: |
-          FILE="${{ steps.changed.outputs.all_changed_files }}"
-          if [ -z "$FILE" ]; then
-            echo "image=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          declare -a IMAGES_ARR=()
 
-          IMG=$(yq '.services.*.image' "$FILE" | grep -v null | head -n 1)
-          echo "Image found: $IMG"
-          echo "image=$IMG" >> $GITHUB_OUTPUT
+          FILES="${{ steps.changed.outputs.all_changed_files }}"
+          for FILE in $FILES; do
+            [ -f "$FILE" ] || continue
+            FOUND=$(yq '.services.*.image' "$FILE" | grep -v null || true)
+            if [ -n "$FOUND" ]; then
+              while IFS= read -r img; do
+                [ -z "$img" ] && continue
+                IMAGES_ARR+=("$img")
+              done <<< "$FOUND"
+            fi
+          done
 
-      - name: Stop if no image found
-        if: steps.image.outputs.image == ''
-        run: echo "No image found — exiting."
+          IMAGES=$(printf '%s\n' "${IMAGES_ARR[@]}" | sed '/^$/d' | sort -u)
+          IMAGES_JSON=$(printf '%s\n' "$IMAGES" | jq -R . | jq -s .)
+          echo "images_json=$IMAGES_JSON" >> "$GITHUB_OUTPUT"
 
-      #########################
-      # Run Trivy scans
-      #########################
-      - name: Run Trivy (table output)
-        uses: aquasecurity/trivy-action@0.33.1
+  trivy:
+    needs: discover-images
+    runs-on: ubuntu-latest
+    if: needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.discover-images.outputs.images) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set weekly cache key
+        run: echo "WEEK=$(date +'%G%V')" >> "$GITHUB_ENV"
+
+      - name: Cache Trivy DB (rotates weekly)
+        uses: actions/cache@v4
         with:
-          image-ref: ${{ steps.image.outputs.image }}
-          format: table
-          output: trivy-table.txt
+          path: ~/.cache/trivy
+          key: trivy-db-${{ runner.os }}-${{ env.WEEK }}
+          restore-keys: |
+            trivy-db-${{ runner.os }}-
+
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v3
+        with:
+          version: '1.7.1'
+
+      - name: Trivy scan (JSON)
+        uses: aquasecurity/trivy-action@0.33.1
+        env:
+          TRIVY_CACHE_DIR: ~/.cache/trivy
+        with:
+          image-ref: ${{ matrix.image }}
+          format: json
+          output: trivy.json
+          vuln-type: os,library
+          timeout: 10m
+          ignore-unfixed: false
           exit-code: 0
 
-      - name: Run Trivy (SARIF output)
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: ${{ steps.image.outputs.image }}
-          format: sarif
-          output: trivy.sarif
-          exit-code: 0
+      - name: Summarize severities
+        id: sev
+        run: |
+          SAFE=$(echo "${{ matrix.image }}" | tr '/: ' '__-')
+          echo "SAFE=$SAFE" >> "$GITHUB_ENV"
+          HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy.json)
+          CRIT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy.json)
+          {
+            echo "image=${{ matrix.image }}"
+            echo "high=$HIGH"
+            echo "critical=$CRIT"
+          } > "summary-${SAFE}.txt"
 
-      #########################
-      # Upload SARIF + table artifact
-      #########################
-      - name: Upload SARIF result
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy.sarif
-
-      - name: Upload table report artifact
+      - name: Upload per-image JSON
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-table
-          path: trivy-table.txt
+          name: trivy-json-${{ env.SAFE }}
+          path: trivy.json
           retention-days: 30
 
-      #########################
-      # Generate a simple summary
-      #########################
-      - name: Generate summary of HIGH/CRITICAL vulns
-        id: summary
+      - name: Upload per-image summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-summary-${{ env.SAFE }}
+          path: summary-${{ env.SAFE }}.txt
+          retention-days: 30
+
+  comment:
+    needs: [discover-images, trivy]
+    runs-on: ubuntu-latest
+    if: always() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v3
+        with:
+          version: '1.7.1'
+
+      - name: Download summaries
+        uses: actions/download-artifact@v4
+        with:
+          path: summaries
+
+      - name: Build PR comment
+        id: build
         run: |
-          HIGH=$(grep -c "HIGH" trivy-table.txt || true)
-          CRIT=$(grep -c "CRITICAL" trivy-table.txt || true)
+          echo "## 🔍 Trivy Vulnerability Scan Summary (Dependabot → main)" > comment.md
+          echo "" >> comment.md
+          echo "Images scanned:" >> comment.md
+          echo '```' >> comment.md
+          jq -r '.[]' <<< '${{ needs.discover-images.outputs.images }}' >> comment.md
+          echo '```' >> comment.md
+          echo "" >> comment.md
+          echo "### Per-image vulnerabilities" >> comment.md
+          echo "" >> comment.md
 
-          echo "high=$HIGH" >> $GITHUB_OUTPUT
-          echo "crit=$CRIT" >> $GITHUB_OUTPUT
+          for f in summaries/**/summary-*.txt; do
+            [ -f "$f" ] || continue
+            IMG=$(grep '^image=' "$f" | cut -d= -f2-)
+            HIGH=$(grep '^high=' "$f" | cut -d= -f2)
+            CRIT=$(grep '^critical=' "$f" | cut -d= -f2)
+            {
+              echo "Image: \`$IMG\`"
+              echo ""
+              echo "| Severity | Count |"
+              echo "|----------|-------|"
+              echo "| HIGH     | ${HIGH} |"
+              echo "| CRITICAL | ${CRIT} |"
+              echo ""
+              echo "---"
+              echo ""
+            } >> comment.md
+          done
 
-      #########################
-      # PR Comment
-      #########################
-      - name: Comment on PR with scan summary
+          echo "message<<EOF" >> "$GITHUB_OUTPUT"
+          cat comment.md >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: trivy-scan
-          message: |
-            ## 🔍 Trivy Scan Summary (Dependabot → main)
-
-            **Image Scanned:**  
-            `${{ steps.image.outputs.image }}`
-
-            ### 🛡 Vulnerabilities
-            | Severity | Count |
-            |----------|-------|
-            | HIGH | `${{ steps.summary.outputs.high }}` |
-            | CRITICAL | `${{ steps.summary.outputs.crit }}` |
-
-            ### 📄 Full Reports
-            **Workflow Artifacts (Full Trivy Table Output)**  
-            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
-
-            **SARIF Security Dashboard**  
-            ${{ github.server_url }}/${{ github.repository }}/security/code-scanning
-
-            _This scan does not block merges — informational only._
+          message: ${{ steps.build.outputs.message }}
