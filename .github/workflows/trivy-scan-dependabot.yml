@@ -51,13 +51,25 @@ jobs:
           done
 
           IMAGES=$(printf '%s\n' "${IMAGES_ARR[@]}" | sed '/^$/d' | sort -u)
-          IMAGES_JSON=$(printf '%s\n' "$IMAGES" | jq -R . | jq -s .)
-          echo "images_json=$IMAGES_JSON" >> "$GITHUB_OUTPUT"
+          if [ -z "$IMAGES" ]; then
+            IMAGES_JSON='[]'
+          else
+            IMAGES_JSON=$(printf '%s\n' "$IMAGES" | jq -R . | jq -s .)
+          fi
+
+          echo "Discovered images JSON:"
+          printf '%s\n' "$IMAGES_JSON"
+
+          {
+            echo "images_json<<EOF"
+            printf '%s\n' "$IMAGES_JSON"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
   trivy:
     needs: discover-images
     runs-on: ubuntu-latest
-    if: needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    if: success() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
     strategy:
       fail-fast: false
       matrix:
@@ -124,7 +136,7 @@ jobs:
   comment:
     needs: [discover-images, trivy]
     runs-on: ubuntu-latest
-    if: always() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    if: success() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
     steps:
       - uses: actions/checkout@v6
 
