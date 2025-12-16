@@ -106,18 +106,21 @@ jobs:
           ignore-unfixed: false
           exit-code: 0
 
+      - name: Convert Trivy output to table
+        uses: aquasecurity/trivy-action@0.33.1
+        env:
+          TRIVY_FORMAT: table
+        with:
+          scan-type: convert
+          scan-ref: trivy.json
+          format: table
+          output: trivy.txt
+
       - name: Summarize severities
         id: sev
         run: |
           SAFE=$(echo "${{ matrix.image }}" | tr '/: ' '__-')
           echo "SAFE=$SAFE" >> "$GITHUB_ENV"
-          HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy.json)
-          CRIT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy.json)
-          {
-            echo "image=${{ matrix.image }}"
-            echo "high=$HIGH"
-            echo "critical=$CRIT"
-          } > "summary-${SAFE}.txt"
 
       - name: Upload per-image JSON
         uses: actions/upload-artifact@v5
@@ -126,11 +129,11 @@ jobs:
           path: trivy.json
           retention-days: 30
 
-      - name: Upload per-image summary
+      - name: Upload per-image table
         uses: actions/upload-artifact@v5
         with:
-          name: trivy-summary-${{ env.SAFE }}
-          path: summary-${{ env.SAFE }}.txt
+          name: trivy-table-${{ env.SAFE }}
+          path: trivy.txt
           retention-days: 30
 
   comment:
@@ -145,10 +148,12 @@ jobs:
         with:
           version: '1.7.1'
 
-      - name: Download summaries
+      - name: Download Trivy JSON artifacts
         uses: actions/download-artifact@v6
         with:
-          path: summaries
+          path: trivy-json
+          pattern: trivy-json-*
+          merge-multiple: true
 
       - name: Build PR comment
         id: build
@@ -163,11 +168,12 @@ jobs:
           echo "### Per-image vulnerabilities" >> comment.md
           echo "" >> comment.md
 
-          for f in summaries/**/summary-*.txt; do
-            [ -f "$f" ] || continue
-            IMG=$(grep '^image=' "$f" | cut -d= -f2-)
-            HIGH=$(grep '^high=' "$f" | cut -d= -f2)
-            CRIT=$(grep '^critical=' "$f" | cut -d= -f2)
+          FOUND_JSON=0
+          while IFS= read -r -d '' f; do
+            FOUND_JSON=1
+            IMG=$(jq -r '.ArtifactName // "unknown"' "$f")
+            HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$f")
+            CRIT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$f")
             {
               echo "Image: \`$IMG\`"
               echo ""
@@ -179,7 +185,21 @@ jobs:
               echo "---"
               echo ""
             } >> comment.md
-          done
+          done < <(find trivy-json -type f -name 'trivy.json' -print0)
+
+          if [ "$FOUND_JSON" -eq 0 ]; then
+            echo "_No Trivy JSON artifacts found to summarize._" >> comment.md
+            echo "" >> comment.md
+          fi
+
+          if [ "$FOUND_JSON" -eq 1 ]; then
+            echo "### 📄 Full Reports" >> comment.md
+            echo "The complete Trivy JSON reports are uploaded as artifacts (one per image)." >> comment.md
+            echo "" >> comment.md
+            echo "Artifacts (tables + JSON):" >> comment.md
+            echo "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> comment.md
+            echo "" >> comment.md
+          fi
 
           echo "message<<EOF" >> "$GITHUB_OUTPUT"
           cat comment.md >> "$GITHUB_OUTPUT"
