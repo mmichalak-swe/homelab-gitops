@@ -158,7 +158,7 @@ jobs:
       - name: Build PR comment
         id: build
         run: |
-          echo "## 🔍 Trivy Vulnerability Scan Summary (Dependabot → main)" > comment.md
+          echo "## Trivy Vulnerability Scan Summary" > comment.md
           echo "" >> comment.md
           echo "Images scanned:" >> comment.md
           echo '```' >> comment.md
@@ -172,15 +172,19 @@ jobs:
           while IFS= read -r -d '' f; do
             FOUND_JSON=1
             IMG=$(jq -r '.ArtifactName // "unknown"' "$f")
-            HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$f")
             CRIT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$f")
+            HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$f")
+            MED=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="MEDIUM")] | length' "$f")
+            LOW=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="LOW")] | length' "$f")
             {
               echo "Image: \`$IMG\`"
               echo ""
               echo "| Severity | Count |"
               echo "|----------|-------|"
-              echo "| HIGH     | ${HIGH} |"
               echo "| CRITICAL | ${CRIT} |"
+              echo "| HIGH     | ${HIGH} |"
+              echo "| MEDIUM   | ${MED} |"
+              echo "| LOW      | ${LOW} |"
               echo ""
               echo "---"
               echo ""
@@ -193,10 +197,8 @@ jobs:
           fi
 
           if [ "$FOUND_JSON" -eq 1 ]; then
-            echo "### 📄 Full Reports" >> comment.md
-            echo "The complete Trivy JSON reports are uploaded as artifacts (one per image)." >> comment.md
-            echo "" >> comment.md
-            echo "Artifacts (tables + JSON):" >> comment.md
+            echo "### Full Trivy Reports" >> comment.md
+            echo "Complete Trivy output for the above scan(s) can be found here:" >> comment.md
             echo "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> comment.md
             echo "" >> comment.md
           fi
