@@ -11,13 +11,14 @@ updates:
     ignore:
       - dependency-name: "caddy-*" 
     schedule:
-      interval: "cron"
-      cronjob: "30 11 * * *"
+      interval: "daily"
+      time: "11:30"
       timezone: "America/New_York"
   - package-ecosystem: "docker"
     directories:
       - "/Dockerfiles/*"
     schedule:
-      interval: "cron"
-      cronjob: "35 11 * * 1"
+      interval: "weekly"
+      day: "monday"
+      time: "11:35"
       timezone: "America/New_York"
