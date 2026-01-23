@@ -1,0 +1,17 @@
+name: Notify Discord on Dependabot PR
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
+    steps:
+      - name: Send message to Discord
+        uses: sarisia/actions-send-discord-message@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: ${{ github.event.pull_request.title }}
+          url: ${{ github.event.pull_request.html_url }}
