@@ -1,22 +1,23 @@
 services:
   wireguard:
-    image: ghcr.io/wg-easy/wg-easy:14
+    image: ghcr.io/wg-easy/wg-easy:15.2.1
     container_name: wireguard
     hostname: wireguard
     environment:
-      - LANG=${LANG}
-      - WG_HOST=${WG_HOST}
-      - PASSWORD_HASH=${PASSWORD_HASH}
       - PORT=${PORT}
-      - WG_PORT=${WG_PORT}
-      - WG_DEFAULT_ADDRESS=${WG_DEFAULT_ADDRESS}
-      - WG_DEFAULT_DNS=${WG_DEFAULT_DNS}
-      - WG_ALLOWED_IPS=${WG_ALLOWED_IPS}
-      - UI_TRAFFIC_STATS=${UI_TRAFFIC_STATS}
-      - UI_CHART_TYPE=${UI_CHART_TYPE}
+      - DISABLE_IPV6=${DISABLE_IPV6}
+      - INIT_ENABLED=${INIT_ENABLED}
+      - INIT_USERNAME=${INIT_USERNAME}
+      - INIT_PASSWORD=${INIT_PASSWORD}
+      - INIT_HOST=${INIT_HOST}
+      - INIT_PORT=${INIT_PORT}
+      - INIT_DNS=${INIT_DNS}
+      - INIT_IPV4_CIDR=${INIT_IPV4_CIDR}
+      - INIT_IPV6_CIDR=${INIT_IPV6_CIDR}
+      - INIT_ALLOWED_IPS=${INIT_ALLOWED_IPS}
     restart: unless-stopped
     volumes:
-      - etc_wireguard:/etc/wireguard
+      - etc:/etc/wireguard
     cap_add:
       - NET_ADMIN
     network_mode: host
@@ -35,4 +36,4 @@ services:
 
 
 volumes:
-  etc_wireguard:
+  etc:
