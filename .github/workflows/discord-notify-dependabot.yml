@@ -10,7 +10,7 @@ jobs:
     if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
     steps:
       - name: Send message to Discord
-        uses: sarisia/actions-send-discord-message@v1
+        uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           content: ${{ github.event.pull_request.title }}
