@@ -1,13 +1,19 @@
 name: Notify Discord on Dependabot PR
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
+    if: github.actor == 'dependabot[bot]'
     steps:
       - name: Send message to Discord
         uses: sarisia/actions-status-discord@v1
