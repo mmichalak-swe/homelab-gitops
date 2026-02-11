@@ -4,13 +4,16 @@ services:
     container_name: wud
     hostname: wud
     restart: unless-stopped
+    depends_on:
+      wud-socket-proxy:
+        condition: service_healthy
     expose:
       - 3000
     environment:
       - TZ=${TZ}
       - WUD_SERVER_PORT=${WUD_SERVER_PORT}
       - WUD_TRIGGER_DISCORD_1_URL=${WUD_TRIGGER_DISCORD_1_URL}
-      - WUD_WATCHER_LOCAL_SOCKET=tcp://wud-socket-proxy:2375
+      - WUD_WATCHER_LOCAL_SOCKET=${WUD_WATCHER_LOCAL_SOCKET}
       - WUD_WATCHER_LOCAL_CRON=${WUD_WATCHER_LOCAL_CRON}
       - WUD_WATCHER_LOCAL_WATCHALL=${WUD_WATCHER_LOCAL_WATCHALL}
       - WUD_WATCHER_LOCAL_WATCHEVENTS=${WUD_WATCHER_LOCAL_WATCHEVENTS}
@@ -38,13 +41,10 @@ services:
     volumes:
       - store:/store
       - certs:/certs
-    depends_on:
-      wud-socket-proxy:
-        condition: service_healthy
     networks:
       pihole-net:
         ipv4_address: 172.18.0.30
-      wud-proxy-net:
+      proxy-net:
     logging:
       driver: "json-file"
       options:
@@ -68,6 +68,8 @@ services:
       retries: 3
       start_period: 10s
     environment:
+      - LOG_LEVEL=info
+      - SOCKET_PATH=/var/run/docker.sock
       # Defaults (safe)
       - EVENTS=1
       - PING=1
@@ -95,22 +97,23 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - wud-proxy-net
+      proxy-net:
     logging:
       driver: "json-file"
       options:
         max-size: "64m"
 
-networks:
-  pihole-net:
-    name: pihole_docker_pihole-net
-    external: true
-  wud-proxy-net:
-    name: wud_socket_proxy_net
-    driver: bridge
-    internal: true
-
 
 volumes:
   store:
   certs:
+
+
+networks:
+  pihole-net:
+    name: pihole_docker_pihole-net
+    external: true
+  proxy-net:
+    name: wud_sp_net
+    driver: bridge
+    internal: true
