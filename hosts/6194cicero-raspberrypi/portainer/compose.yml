@@ -98,6 +98,6 @@ networks:
     name: pihole_docker_pihole-net
     external: true
   proxy-net:
-    name: socket_proxy_net
+    name: portainer_sp_net
     driver: bridge
     internal: true
