@@ -2,13 +2,17 @@ services:
   portainer:
     image: portainer/portainer-ce:2.33.7-alpine
     container_name: portainer
+    hostname: portainer
     restart: unless-stopped
+    depends_on:
+      portainer-socket-proxy:
+        condition: service_healthy
+    command: -H tcp://portainer-socket-proxy:2375 
 #    ports:
 #      - 9000:9000
     expose:
-      - 9000  # HTTP port
+      - 9000
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     healthcheck:
       test: ["CMD-SHELL", "wget --spider --quiet http://localhost:9000 || exit 1"]
@@ -19,6 +23,7 @@ services:
     networks:
       pihole-net:
         ipv4_address: 172.18.0.70
+      proxy-net:
     logging:
       driver: "json-file"
       options:
@@ -29,6 +34,62 @@ services:
       - 'wud.link.template=https://github.com/portainer/portainer/releases/tag/$${major}.$${minor}.$${patch}'
 
 
+  portainer-socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.4.2
+    container_name: portainer-socket-proxy
+    hostname: portainer-socket-proxy
+    expose:
+      - 2375
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:2375/_ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - LOG_LEVEL=info
+      - SOCKET_PATH=/var/run/docker.sock
+      # Safe
+      - EVENTS=1
+      - PING=1
+      - VERSION=1
+      # Portainer
+      - ALLOW_START=1
+      - ALLOW_STOP=1
+      - ALLOW_RESTARTS=1
+      - CONTAINERS=1
+      - GRPC=0
+      - EXEC=1
+      - IMAGES=1
+      - INFO=1
+      - NETWORKS=1
+      - SERVICES=0
+      - SWARM=0
+      - SYSTEM=1
+      - VOLUMES=1
+      # Restrict security-critical
+      - AUTH=0
+      - BUILD=0
+      - COMMIT=0
+      - CONFIGS=0
+      - DISTRIBUTION=0
+      - NODES=0
+      - PLUGINS=0
+      - POST=1
+      - SECRETS=0
+      - SESSION=0
+      - TASKS=0
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      proxy-net:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+
+
 volumes:
   portainer_data:
 
@@ -37,3 +98,7 @@ networks:
   pihole-net:
     name: pihole_docker_pihole-net
     external: true
+  proxy-net:
+    name: portainer_sp_net
+    driver: bridge
+    internal: true
