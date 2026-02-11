@@ -2,11 +2,12 @@ services:
   portainer:
     image: portainer/portainer-ce:2.33.7-alpine
     container_name: portainer
+    hostname: portainer
     restart: unless-stopped
     depends_on:
-      socket-proxy:
+      portainer-socket-proxy:
         condition: service_healthy
-    command: -H tcp://socket-proxy:2375 
+    command: -H tcp://portainer-socket-proxy:2375 
 #    ports:
 #      - 9000:9000
     expose:
@@ -33,10 +34,10 @@ services:
       - 'wud.link.template=https://github.com/portainer/portainer/releases/tag/$${major}.$${minor}.$${patch}'
 
 
-  socket-proxy:
+  portainer-socket-proxy:
     image: tecnativa/docker-socket-proxy:v0.4.2
-    container_name: socket-proxy
-    hostname: socket-proxy
+    container_name: portainer-socket-proxy
+    hostname: portainer-socket-proxy
     expose:
       - 2375
     healthcheck:
