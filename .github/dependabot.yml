@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "thursday"
-      time: "13:35"
+      time: "14:05"
       timezone: "America/New_York"
   - package-ecosystem: "docker-compose"
     directories:
