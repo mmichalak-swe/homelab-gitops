@@ -35,7 +35,7 @@ services:
 
 
   portainer-socket-proxy:
-    image: tecnativa/docker-socket-proxy:v0.4.2
+    image: linuxserver/socket-proxy:3.2.12
     container_name: portainer-socket-proxy
     hostname: portainer-socket-proxy
     expose:

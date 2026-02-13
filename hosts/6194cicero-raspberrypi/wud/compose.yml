@@ -57,7 +57,7 @@ services:
 
 
   wud-socket-proxy:
-    image: tecnativa/docker-socket-proxy:v0.4.2
+    image: linuxserver/socket-proxy:3.2.12
     container_name: wud-socket-proxy
     hostname: wud-socket-proxy
     expose:
