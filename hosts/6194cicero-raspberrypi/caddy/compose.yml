@@ -7,7 +7,7 @@ services:
     #     RUN xcaddy build --with github.com/caddy-dns/porkbun
     #     FROM caddy:2.11-alpine
     #     COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-    #     RUN apk add curl
+    #     RUN apk add --no-cache curl
     image: caddy-porkbun:2.11-alpine
     container_name: caddy
     hostname: caddy
