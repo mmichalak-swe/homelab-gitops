@@ -123,14 +123,14 @@ jobs:
           echo "SAFE=$SAFE" >> "$GITHUB_ENV"
 
       - name: Upload per-image JSON
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: trivy-json-${{ env.SAFE }}
           path: trivy.json
           retention-days: 30
 
       - name: Upload per-image table
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: trivy-table-${{ env.SAFE }}
           path: trivy.txt
