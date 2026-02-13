@@ -149,7 +149,7 @@ jobs:
           version: '1.7.1'
 
       - name: Download Trivy JSON artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: trivy-json
           pattern: trivy-json-*
