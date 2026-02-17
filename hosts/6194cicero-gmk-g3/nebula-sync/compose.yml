@@ -1,48 +1,45 @@
-services:
-  nebula-sync:
-    image: ghcr.io/lovelaze/nebula-sync:v0.11.1
-    container_name: nebula-sync
-    hostname: nebula-sync
-    environment:
-      - PRIMARY=${PRIMARY}
-      - REPLICAS=${REPLICAS}
-      - RUN_GRAVITY=${RUN_GRAVITY}
-      - CRON=${CRON}
-      - FULL_SYNC=${FULL_SYNC}
-      - SYNC_CONFIG_DNS=${SYNC_CONFIG_DNS}
-      - SYNC_CONFIG_DHCP=${SYNC_CONFIG_DHCP}
-      - SYNC_CONFIG_NTP=${SYNC_CONFIG_NTP}
-      - SYNC_CONFIG_RESOLVER=${SYNC_CONFIG_RESOLVER}
-      - SYNC_CONFIG_DATABASE=${SYNC_CONFIG_DATABASE}
-      - SYNC_CONFIG_MISC=${SYNC_CONFIG_MISC}
-      - SYNC_CONFIG_DEBUG=${SYNC_CONFIG_DEBUG}
-      - SYNC_GRAVITY_DHCP_LEASES=${SYNC_GRAVITY_DHCP_LEASES}
-      - SYNC_GRAVITY_GROUP=${SYNC_GRAVITY_GROUP}
-      - SYNC_GRAVITY_AD_LIST=${SYNC_GRAVITY_AD_LIST}
-      - SYNC_GRAVITY_AD_LIST_BY_GROUP=${SYNC_GRAVITY_AD_LIST_BY_GROUP}
-      - SYNC_GRAVITY_DOMAIN_LIST=${SYNC_GRAVITY_DOMAIN_LIST}
-      - SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP=${SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP}
-      - SYNC_GRAVITY_CLIENT=${SYNC_GRAVITY_CLIENT}
-      - SYNC_GRAVITY_CLIENT_BY_GROUP=${SYNC_GRAVITY_CLIENT_BY_GROUP}
-      - SYNC_CONFIG_DNS_EXCLUDE=${SYNC_CONFIG_DNS_EXCLUDE}
-    restart: unless-stopped
-    networks:
-      caddy-net:
-        ipv4_address: 172.18.0.9
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "128m"
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/lovelaze/nebula-sync/releases/tag/v$${major}.$${minor}.$${patch}'
-
-
 networks:
   caddy-net:
     name: caddy_caddy-net
     external: true
+
+services:
+  nebula-sync:
+    container_name: nebula-sync
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    environment:
+      - CRON=${CRON}
+      - FULL_SYNC=${FULL_SYNC}
+      - PRIMARY=${PRIMARY}
+      - REPLICAS=${REPLICAS}
+      - RUN_GRAVITY=${RUN_GRAVITY}
+      - SYNC_CONFIG_DATABASE=${SYNC_CONFIG_DATABASE}
+      - SYNC_CONFIG_DEBUG=${SYNC_CONFIG_DEBUG}
+      - SYNC_CONFIG_DHCP=${SYNC_CONFIG_DHCP}
+      - SYNC_CONFIG_DNS=${SYNC_CONFIG_DNS}
+      - SYNC_CONFIG_DNS_EXCLUDE=${SYNC_CONFIG_DNS_EXCLUDE}
+      - SYNC_CONFIG_MISC=${SYNC_CONFIG_MISC}
+      - SYNC_CONFIG_NTP=${SYNC_CONFIG_NTP}
+      - SYNC_CONFIG_RESOLVER=${SYNC_CONFIG_RESOLVER}
+      - SYNC_GRAVITY_AD_LIST=${SYNC_GRAVITY_AD_LIST}
+      - SYNC_GRAVITY_AD_LIST_BY_GROUP=${SYNC_GRAVITY_AD_LIST_BY_GROUP}
+      - SYNC_GRAVITY_CLIENT=${SYNC_GRAVITY_CLIENT}
+      - SYNC_GRAVITY_CLIENT_BY_GROUP=${SYNC_GRAVITY_CLIENT_BY_GROUP}
+      - SYNC_GRAVITY_DHCP_LEASES=${SYNC_GRAVITY_DHCP_LEASES}
+      - SYNC_GRAVITY_DOMAIN_LIST=${SYNC_GRAVITY_DOMAIN_LIST}
+      - SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP=${SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP}
+    hostname: nebula-sync
+    image: ghcr.io/lovelaze/nebula-sync:v0.11.1
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/lovelaze/nebula-sync/releases/tag/v$${major}.$${minor}.$${patch}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      caddy-net:
+    restart: unless-stopped

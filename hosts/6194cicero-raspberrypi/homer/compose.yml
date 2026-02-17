@@ -1,38 +1,35 @@
-services:
-  homer:
-    image: b4bz/homer:v25.11.1
-    container_name: homer
-    hostname: homer
-    expose:
-      - 8080
-    user: 1000:1000
-    environment:
-      - INIT_ASSETS=1
-    volumes:
-      - assets:/www/assets
-    restart: unless-stopped
-    networks:
-      pihole-net:
-        ipv4_address: 172.18.0.40
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "256m"
-    deploy:
-      resources:
-        limits:
-          memory: 64M
-    labels:
-      - 'wud.display.icon=sh:homer'
-      - 'wud.tag.include=^\d+(?:\.\d{1,2})?\.\d+$$'
-      - 'wud.link.template=https://github.com/bastienwirtz/homer/releases/tag/$${raw}'
-
-
 networks:
   pihole-net:
     name: pihole_docker_pihole-net
     external: true
 
+services:
+  homer:
+    container_name: homer
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    environment:
+      - INIT_ASSETS=${INIT_ASSETS}
+    expose:
+      - 8080
+    hostname: homer
+    image: b4bz/homer:v25.11.1
+    labels:
+      - 'wud.display.icon=sh:homer'
+      - 'wud.tag.include=^v?\d+(?:\.\d{1,2})?\.\d+$$'
+      - 'wud.link.template=https://github.com/bastienwirtz/homer/releases/tag/$${raw}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      pihole-net:
+    restart: unless-stopped
+    user: 1000:1000
+    volumes:
+      - assets:/www/assets
 
 volumes:
   assets:
