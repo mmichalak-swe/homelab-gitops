@@ -1,41 +1,38 @@
-services:
-  actual_server:
-    container_name: actual-server
-    hostname: actual-server
-    image: actualbudget/actual-server:26.2.0-alpine
-    restart: unless-stopped
-    expose:
-      - 5006
-    volumes:
-      - data:/data
-    healthcheck:
-      test: ['CMD-SHELL', 'node src/scripts/health-check.js']
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    networks:
-      caddy-net:
-        ipv4_address: 172.18.0.15
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "256m"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    labels:
-      - 'wud.display.icon=sh:actual-budget'
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - 'wud.link.template=hhttps://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
-
-
-volumes:
-  data:
-
-
 networks:
   caddy-net:
     name: caddy_caddy-net
     external: true
+
+services:
+  actual_server:
+    container_name: actual-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    expose:
+      - 5006
+    healthcheck:
+      test: ['CMD-SHELL', 'node src/scripts/health-check.js']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    hostname: actual-server
+    image: actualbudget/actual-server:26.2.0-alpine
+    labels:
+      - 'wud.display.icon=sh:actual-budget'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.link.template=hhttps://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      caddy-net:
+    restart: unless-stopped
+    volumes:
+      - data:/data
+
+volumes:
+  data:

@@ -1,42 +1,40 @@
-services:
-  pairdrop:
-    image: linuxserver/pairdrop:1.11.2
-    container_name: pairdrop
-    hostname: pairdrop
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - RATE_LIMIT=${RATE_LIMIT}
-      - WS_FALLBACK=${WS_FALLBACK}
-      - DEBUG_MODE=${DEBUG_MODE}
-    expose:
-      - 3000
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:3000 || exit 1"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
-    networks:
-      caddy-net:
-        ipv4_address: 172.18.0.60
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "256m"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    labels:
-      - 'wud.display.icon=sh:pairdrop'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/schlagmichdoch/PairDrop/releases/tag/v$${major}.$${minor}.$${patch}'
-
-
 networks:
   caddy-net:
     name: caddy_caddy-net
     external: true
+
+services:
+  pairdrop:
+    container_name: pairdrop
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      - DEBUG_MODE=${DEBUG_MODE}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - RATE_LIMIT=${RATE_LIMIT}
+      - TZ=${TZ}
+      - WS_FALLBACK=${WS_FALLBACK}
+    expose:
+      - 3000
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    hostname: pairdrop
+    image: linuxserver/pairdrop:1.11.2
+    labels:
+      - 'wud.display.icon=sh:pairdrop'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/schlagmichdoch/PairDrop/releases/tag/v$${major}.$${minor}.$${patch}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      caddy-net:
+    restart: unless-stopped

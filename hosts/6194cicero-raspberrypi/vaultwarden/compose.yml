@@ -1,37 +1,34 @@
-services:
-  vaultwarden:
-    image: vaultwarden/server:1.35.3-alpine
-    container_name: vaultwarden
-    hostname: vaultwarden
-    expose:
-      - 80
-    environment:
-      - DOMAIN=${DOMAIN}
-    restart: unless-stopped
-    volumes:
-      - data:/data/
-    networks:
-      pihole-net:
-        ipv4_address: 172.18.0.5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "256m"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    labels:
-      - 'wud.display.icon=sh:vaultwarden'
-      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
-      - 'wud.link.template=https://github.com/dani-garcia/vaultwarden/releases/tag/$${major}.$${minor}.$${patch}'
-
-
 networks:
   pihole-net:
     name: pihole_docker_pihole-net
     external: true
 
+services:
+  vaultwarden:
+    container_name: vaultwarden
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      - DOMAIN=${DOMAIN}
+    expose:
+      - 80
+    hostname: vaultwarden
+    image: vaultwarden/server:1.35.3-alpine
+    labels:
+      - 'wud.display.icon=sh:vaultwarden'
+      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
+      - 'wud.link.template=https://github.com/dani-garcia/vaultwarden/releases/tag/$${major}.$${minor}.$${patch}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      pihole-net:
+    restart: unless-stopped
+    volumes:
+      - data:/data/
 
 volumes:
   data:
