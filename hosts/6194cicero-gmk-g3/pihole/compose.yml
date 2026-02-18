@@ -23,7 +23,7 @@ services:
     expose:
       - 80
     hostname: pihole-gmkg3
-    image: pihole/pihole:2025.11.1
+    image: pihole/pihole:2026.02.0
     labels:
       - 'wud.display.icon=sh:pi-hole'
       - 'wud.tag.include=^\d+(?:\.\d{1,2})?\.\d+$$'
