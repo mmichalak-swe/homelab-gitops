@@ -94,7 +94,7 @@ jobs:
           version: '1.7.1'
 
       - name: Trivy scan (JSON)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.0
         env:
           TRIVY_CACHE_DIR: ~/.cache/trivy
         with:
@@ -107,7 +107,7 @@ jobs:
           exit-code: 0
 
       - name: Convert Trivy output to table
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.0
         env:
           TRIVY_FORMAT: table
         with:
