@@ -30,7 +30,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: speedtest
-    image: linuxserver/speedtest-tracker:1.13.9
+    image: linuxserver/speedtest-tracker:1.13.10
     labels:
       - 'wud.display.icon=sh:speedtest-tracker'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
