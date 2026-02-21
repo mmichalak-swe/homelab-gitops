@@ -6,7 +6,7 @@ networks:
 services:
   nebula-sync:
     container_name: nebula-sync
-    dns: 172.18.0.2
+    # dns: 172.18.0.2
     deploy:
       resources:
         limits:
