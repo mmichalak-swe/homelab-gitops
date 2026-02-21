@@ -26,15 +26,18 @@ services:
       retries: 3
       start_period: 10s
     hostname: pairdrop
-    image: linuxserver/pairdrop:1.11.2
+    image: linuxserver/pairdrop:v1.11.2-ls132
     labels:
       - 'wud.display.icon=sh:pairdrop'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/schlagmichdoch/PairDrop/releases/tag/v$${major}.$${minor}.$${patch}'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
+      - 'wud.link.template=https://github.com/linuxserver/docker-pairdrop/releases/tag/$${raw}'
     logging:
       driver: "json-file"
       options:
         max-size: "128m"
     networks:
       caddy-net:
+    read_only: true
     restart: unless-stopped
+    tmpfs:
+      - /run:exec
