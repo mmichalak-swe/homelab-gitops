@@ -9,7 +9,7 @@ networks:
 
 services:
   portainer:
-    command: -H tcp://portainer-socket-proxy:2375 
+    command: -H tcp://portainer-socket-proxy:2375
     container_name: portainer
     depends_on:
       portainer-socket-proxy:
@@ -80,17 +80,20 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer-socket-proxy
-    image: linuxserver/socket-proxy:3.2.12
+    image: linuxserver/socket-proxy:3.2.12-r0-ls69
     labels:
-      - 'wud.tag.include=^(\d+)\.(\d+)\.(\d+)-r(\d+)-ls(\d+)$$'
-      - 'wud.link.template=https://github.com/getwud/wud/releases/tag/$$1.$$2.$$3-r$$4-ls$$5'
+      - 'wud.tag.include=^\d+\.\d+\.\d+.*$$'
+      - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
     logging:
       driver: "json-file"
       options:
         max-size: "128m"
     networks:
       proxy-net:
+    read_only: true
     restart: unless-stopped
+    tmpfs:
+      - /run:exec
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
