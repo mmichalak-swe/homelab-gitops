@@ -6,6 +6,11 @@ networks:
     name: wud_sp_net
     driver: bridge
     internal: true
+    ipam:
+      config:
+        - subnet: 172.18.2.0/24
+          ip_range: 172.18.2.0/24
+          gateway: 172.18.2.1
 
 services:
   wud:
