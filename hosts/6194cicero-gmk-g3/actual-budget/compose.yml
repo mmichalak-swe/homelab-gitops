@@ -6,7 +6,7 @@ networks:
 services:
   actual_server:
     container_name: actual-server
-    dns: 172.18.0.2
+    dns: 172.19.0.2
     deploy:
       resources:
         limits:
@@ -31,7 +31,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
-        ipv4_address: 172.18.0.23
+        ipv4_address: 172.19.0.23
     restart: unless-stopped
     volumes:
       - data:/data

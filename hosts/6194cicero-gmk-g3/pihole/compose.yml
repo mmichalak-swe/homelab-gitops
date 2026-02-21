@@ -36,7 +36,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 172.19.0.2
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -70,7 +70,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
-        ipv4_address: 172.18.0.3
+        ipv4_address: 172.19.0.3
     restart: unless-stopped
     volumes:
       - unbound-config:/opt/unbound/etc/unbound

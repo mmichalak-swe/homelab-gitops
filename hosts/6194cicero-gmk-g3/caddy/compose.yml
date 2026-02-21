@@ -3,9 +3,9 @@ networks:
     driver: bridge
     ipam:
       config:
-        - gateway: 172.18.0.1
-          ip_range: 172.18.0.0/24
-          subnet: 172.18.0.0/24
+        - gateway: 172.19.0.1
+          ip_range: 172.19.0.0/24
+          subnet: 172.19.0.0/24
     name: caddy-net
 
 services:
@@ -19,7 +19,7 @@ services:
     #     COPY --from=builder /usr/bin/caddy /usr/bin/caddy
     #     RUN apk add --no-cache curl
     container_name: caddy
-    dns: 172.18.0.2
+    dns: 172.19.0.2
     environment:
       - PORKBUN_API_KEY=${PORKBUN_API_KEY}
       - PORKBUN_API_SECRET_KEY=${PORKBUN_API_SECRET_KEY}
@@ -43,7 +43,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
-        ipv4_address: 172.18.0.5
+        ipv4_address: 172.19.0.5
     ports:
       - '443:443'
     # pull_policy: build
