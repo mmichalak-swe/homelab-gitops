@@ -30,11 +30,11 @@ services:
       retries: 3
       start_period: 10s
     hostname: speedtest
-    image: linuxserver/speedtest-tracker:1.13.10
+    image: linuxserver/speedtest-tracker:v1.13.10-ls138
     labels:
       - 'wud.display.icon=sh:speedtest-tracker'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/alexjustesen/speedtest-tracker/releases/tag/v$${major}.$${minor}.$${patch}'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
+      - 'wud.link.template=https://github.com/linuxserver/docker-speedtest-tracker/releases/tag/$${raw}'
     logging:
       driver: "json-file"
       options:
