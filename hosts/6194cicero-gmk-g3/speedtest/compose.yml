@@ -1,11 +1,12 @@
 networks:
   caddy-net:
-    name: caddy_caddy-net
+    name: caddy-net
     external: true
 
 services:
   speedtest:
     container_name: speedtest
+    dns: 172.18.0.2
     deploy:
       resources:
         limits:
@@ -41,6 +42,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
+        ipv4_address: 172.18.0.24
     restart: unless-stopped
     volumes:
       - data:/config
