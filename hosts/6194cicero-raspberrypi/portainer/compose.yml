@@ -1,21 +1,27 @@
 networks:
-  pihole-net:
-    name: pihole_docker_pihole-net
-    external: true
+  caddy-net:
+    driver: bridge
+    ipam:
+      config:
+        - gateway: 172.18.0.1
+          ip_range: 172.18.0.0/24
+          subnet: 172.18.0.0/24
+    name: caddy-net
   proxy-net:
-    name: portainer_sp_net
     driver: bridge
     internal: true
     ipam:
       config:
-        - subnet: 172.18.1.0/24
+        - gateway: 172.18.1.1
           ip_range: 172.18.1.0/24
-          gateway: 172.18.1.1
+          subnet: 172.18.1.0/24
+    name: portainer_sp_net
 
 services:
   portainer:
     command: -H tcp://portainer-socket-proxy:2375
     container_name: portainer
+    dns: 172.18.0.2
     depends_on:
       portainer-socket-proxy:
         condition: service_healthy
@@ -38,7 +44,8 @@ services:
       options:
         max-size: "128m"
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.20
       proxy-net:
     restart: unless-stopped
     volumes:

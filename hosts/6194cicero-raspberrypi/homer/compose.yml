@@ -1,6 +1,6 @@
 networks:
-  pihole-net:
-    name: pihole_docker_pihole-net
+  caddy-net:
+    name: caddy-net
     external: true
 
 services:
@@ -10,6 +10,7 @@ services:
       resources:
         limits:
           memory: 64M
+    dns: 172.18.0.2
     environment:
       - INIT_ASSETS=${INIT_ASSETS}
     expose:
@@ -25,7 +26,8 @@ services:
       options:
         max-size: "128m"
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.23
     restart: unless-stopped
     user: 1000:1000
     volumes:

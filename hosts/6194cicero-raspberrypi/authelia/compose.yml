@@ -1,11 +1,12 @@
 networks:
-  pihole-net:
-    name: pihole_docker_pihole-net
+  caddy-net:
+    name: caddy-net
     external: true
 
 services:
   authelia:
     container_name: authelia
+    dns: 172.18.0.2
     environment:
       - AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=${AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE}
       - AUTHELIA_SESSION_SECRET_FILE=${AUTHELIA_SESSION_SECRET_FILE}
@@ -31,7 +32,8 @@ services:
         max-size: 128m
     mem_limit: 512m
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.4
     restart: unless-stopped
     volumes:
       - config:/config

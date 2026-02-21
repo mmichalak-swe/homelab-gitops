@@ -1,16 +1,16 @@
 networks:
-  pihole-net:
-    name: pihole_docker_pihole-net
+  caddy-net:
+    name: caddy-net
     external: true
   proxy-net:
-    name: wud_sp_net
     driver: bridge
     internal: true
     ipam:
       config:
-        - subnet: 172.18.2.0/24
+        - gateway: 172.18.2.1
           ip_range: 172.18.2.0/24
-          gateway: 172.18.2.1
+          subnet: 172.18.2.0/24
+    name: wud_sp_net
 
 services:
   wud:
@@ -18,6 +18,7 @@ services:
     depends_on:
       wud-socket-proxy:
         condition: service_healthy
+    dns: 172.18.0.2
     environment:
       - TZ=${TZ}
       - WUD_AUTH_OIDC_AUTHELIA_CLIENTID=${WUD_AUTH_OIDC_AUTHELIA_CLIENTID}
@@ -62,7 +63,8 @@ services:
       options:
         max-size: "128m"
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.22
       proxy-net:
     restart: unless-stopped
     volumes:
