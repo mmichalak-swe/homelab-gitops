@@ -110,10 +110,10 @@ services:
         max-size: "128m"
     networks:
       proxy-net:
-    tmpfs:
-      - /run:exec
     read_only: true
     restart: unless-stopped
+    tmpfs:
+      - /run:exec
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
