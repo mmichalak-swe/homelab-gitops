@@ -101,7 +101,8 @@ services:
     hostname: wud-socket-proxy
     image: linuxserver/socket-proxy:3.2.12-r0-ls69
     labels:
-      - 'wud.tag.include=^(\d+)\.(\d+)\.(\d+)-r(\d+)-ls(\d+)$$'
+      - 'wud.tag.include=^\d+\.\d+\.\d+*$$'
+      - 'wud.tag.transform=^(\d+)\.(\d+)\.(\d+)-r(\d+)-ls(\d+)$$'
       - 'https://github.com/linuxserver/docker-socket-proxy/releases/tag/$$1.$$2.$$3-r$$4-ls$$5'
     logging:
       driver: "json-file"
