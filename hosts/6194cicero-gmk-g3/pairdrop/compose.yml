@@ -12,10 +12,8 @@ services:
           memory: 256M
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
-      # - PGID=${PGID}
-      # - PUID=${PUID}
-      - UID=${UID}
-      - GID=${GID}
+      - PGID=${PGID}
+      - PUID=${PUID}
       - RATE_LIMIT=${RATE_LIMIT}
       - TZ=${TZ}
       - WS_FALLBACK=${WS_FALLBACK}
@@ -39,5 +37,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
+    read_only: true
     restart: unless-stopped
-    user: "${UID}:${GID}"
+    tmpfs:
+      - /run:exec
