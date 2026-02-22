@@ -80,3 +80,4 @@ volumes:
   etc-pihole:
   etc-dnsmasqd:
   unbound-config:
+  init-config:
