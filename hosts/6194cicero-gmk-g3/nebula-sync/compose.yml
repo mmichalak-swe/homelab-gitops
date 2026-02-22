@@ -32,6 +32,7 @@ services:
       - SYNC_GRAVITY_DHCP_LEASES=${SYNC_GRAVITY_DHCP_LEASES}
       - SYNC_GRAVITY_DOMAIN_LIST=${SYNC_GRAVITY_DOMAIN_LIST}
       - SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP=${SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP}
+      - TZ=${TZ}
     hostname: nebula-sync
     image: ghcr.io/lovelaze/nebula-sync:v0.11.1
     labels:
