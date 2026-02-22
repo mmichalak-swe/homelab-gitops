@@ -12,6 +12,7 @@ services:
       resources:
         limits:
           memory: 512M
+    entrypoint: ["/startup/startup_wg.sh"]
     environment:
       - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
