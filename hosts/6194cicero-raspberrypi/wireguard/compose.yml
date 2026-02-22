@@ -1,39 +1,62 @@
+networks:
+  caddy-net:
+    name: caddy-net
+    external: true
+  wg-ls-net:
+    name: wg_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.10.0/24
+          ip_range: 172.18.10.0/24
+          gateway: 172.18.10.1
+
 services:
-  wireguard:
+  wireguard-ls:
     cap_add:
       - NET_ADMIN
-    container_name: wireguard
+    container_name: wireguard-ls
     deploy:
       resources:
         limits:
           memory: 256M
+    dns: 172.18.0.2
     environment:
-      - DISABLE_IPV6=${DISABLE_IPV6}
-      - INIT_ALLOWED_IPS=${INIT_ALLOWED_IPS}
-      - INIT_DNS=${INIT_DNS}
-      - INIT_ENABLED=${INIT_ENABLED}
-      - INIT_HOST=${INIT_HOST}
-      - INIT_IPV4_CIDR=${INIT_IPV4_CIDR}
-      - INIT_IPV6_CIDR=${INIT_IPV6_CIDR}
-      - INIT_PASSWORD=${INIT_PASSWORD}
-      - INIT_PORT=${INIT_PORT}
-      - INIT_USERNAME=${INIT_USERNAME}
-      - PORT=${PORT}
-    hostname: wireguard
-    image: ghcr.io/wg-easy/wg-easy:15.2.2
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - SERVERURL=${SERVERURL}
+      - SERVERPORT=${SERVERPORT}
+      - PEERS=${PEERS}
+      - PEERDNS=${PEERDNS}
+      - INTERNAL_SUBNET=${INTERNAL_SUBNET}
+      - ALLOWEDIPS=${ALLOWEDIPS}
+      - PERSISTENTKEEPALIVE_PEERS=${PERSISTENTKEEPALIVE_PEERS}
+      - LOG_CONFS=${LOG_CONFS}
+    hostname: wireguard-ls
+    image: linuxserver/wireguard:1.0.20250521-r1-ls102
     labels:
       - 'wud.display.icon=sh:wireguard'
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/wg-easy/wg-easy/releases/tag/v$${major}.$${minor}.$${patch}'
+      - 'wud.tag.include=^\d+\.\d+\.\d+.*$$'
+      - 'wud.link.template=https://github.com/linuxserver/docker-wireguard/releases/tag/$${raw}'
     logging:
       driver: "json-file"
       options:
         max-size: "128m"
-    network_mode: host
+    networks:
+      wg-ls-net:
+        ipv4_address: 172.18.10.2
+        gw_priority: 1
+      caddy-net:
+        ipv4_address: 172.18.0.6
+        gw_priority: 0
+    ports:
+      - ${SERVERPORT}:51820/udp
     restart: unless-stopped
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
     volumes:
-      - etc:/etc/wireguard
-
+      - config:/config
 
 volumes:
-  etc:
+  config:
