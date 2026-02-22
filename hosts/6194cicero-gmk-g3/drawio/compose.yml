@@ -1,11 +1,12 @@
 networks:
   caddy-net:
-    name: caddy_caddy-net
+    name: caddy-net
     external: true
 
 services:
   drawio:
     container_name: drawio
+    dns: 172.19.0.2
     deploy:
       resources:
         limits:
@@ -30,4 +31,5 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
+        ipv4_address: 172.19.0.22
     restart: unless-stopped

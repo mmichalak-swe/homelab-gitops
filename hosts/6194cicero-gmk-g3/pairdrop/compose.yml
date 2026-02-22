@@ -1,11 +1,12 @@
 networks:
   caddy-net:
-    name: caddy_caddy-net
+    name: caddy-net
     external: true
 
 services:
   pairdrop:
     container_name: pairdrop
+    dns: 172.19.0.2
     deploy:
       resources:
         limits:
@@ -37,6 +38,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
+        ipv4_address: 172.19.0.21
     read_only: true
     restart: unless-stopped
     tmpfs:

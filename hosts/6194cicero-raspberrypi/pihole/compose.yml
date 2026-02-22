@@ -1,19 +1,18 @@
-# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 networks:
-  pihole-net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.18.0.0/24
-          gateway: 172.18.0.1
+  caddy-net:
+    name: caddy-net
+    external: true
 
 services:
   pihole:
+    cap_add:
+      - NET_ADMIN
     container_name: pihole-rpi4
     deploy:
       resources:
         limits:
           memory: 512M
+    entrypoint: ["/startup/startup_wg.sh"]
     environment:
       - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
@@ -36,18 +35,16 @@ services:
       options:
         max-size: "128m"
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.2
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      # - "67:67/udp" # Pi-hole as DHCP server
     restart: unless-stopped
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasqd:/etc/dnsmasq.d
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    # cap_add:
-      # - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+      - startup:/startup:ro
 
 
   unbound:
@@ -57,7 +54,6 @@ services:
         limits:
           memory: 512M
     healthcheck:
-      # Use the drill wrapper binary to reduce the exit codes to 0 or 1 for healthchecks
       test: ['CMD', 'drill-hc', '@127.0.0.1', 'dnssec.works']
       interval: 30s
       timeout: 10s
@@ -74,7 +70,8 @@ services:
       options:
         max-size: "128m"
     networks:
-      pihole-net:
+      caddy-net:
+        ipv4_address: 172.18.0.3
     restart: unless-stopped
     volumes:
       - unbound-config:/opt/unbound/etc/unbound
@@ -83,4 +80,5 @@ services:
 volumes:
   etc-pihole:
   etc-dnsmasqd:
+  startup:
   unbound-config:

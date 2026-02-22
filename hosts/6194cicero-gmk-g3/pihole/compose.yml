@@ -1,12 +1,14 @@
-# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 networks:
   caddy-net:
-    name: caddy_caddy-net
+    name: caddy-net
     external: true
 
 services:
   pihole-gmkg3:
     container_name: pihole-gmkg3
+    depends_on:
+      unbound:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -34,18 +36,14 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
-    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+        ipv4_address: 172.19.0.2
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      # - "67:67/udp" # Pi-hole as DHCP server
     restart: unless-stopped
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasqd:/etc/dnsmasq.d
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    # cap_add:
-      # - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
 
 
   unbound:
@@ -55,7 +53,6 @@ services:
         limits:
           memory: 512M
     healthcheck:
-      # Use the drill wrapper binary to reduce the exit codes to 0 or 1 for healthchecks
       test: ['CMD', 'drill-hc', '@127.0.0.1', 'dnssec.works']
       interval: 30s
       timeout: 10s
@@ -73,6 +70,7 @@ services:
         max-size: "128m"
     networks:
       caddy-net:
+        ipv4_address: 172.19.0.3
     restart: unless-stopped
     volumes:
       - unbound-config:/opt/unbound/etc/unbound
