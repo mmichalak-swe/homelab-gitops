@@ -43,6 +43,7 @@ services:
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasqd:/etc/dnsmasq.d
+      - init-config:/etc/cont-init.d:ro
 
 
   unbound:
