@@ -53,7 +53,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: wud
-    image: getwud/wud:8.2.0
+    image: getwud/wud:8.2.2
     labels:
       - 'wud.display.icon=sh:wud'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
