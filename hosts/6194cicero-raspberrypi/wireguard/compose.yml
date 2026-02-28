@@ -34,7 +34,7 @@ services:
       - PERSISTENTKEEPALIVE_PEERS=${PERSISTENTKEEPALIVE_PEERS}
       - LOG_CONFS=${LOG_CONFS}
     hostname: wireguard-ls
-    image: linuxserver/wireguard:1.0.20250521-r1-ls102
+    image: linuxserver/wireguard:1.0.20250521-r1-ls103
     labels:
       - 'wud.display.icon=sh:wireguard'
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
