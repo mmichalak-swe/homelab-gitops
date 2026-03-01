@@ -25,7 +25,7 @@ services:
       - /dev/kmsg
     expose:
       - 8080
-    hostname: rpi-cadvisor
+    hostname: monitoring-cadvisor
     image: gcr.io/cadvisor/cadvisor:v0.55.1
     labels:
       - 'wud.display.icon=sh:cadvisor'
@@ -62,7 +62,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    hostname: rpi-grafana
+    hostname: monitoring-grafana
     image: grafana/grafana:12.4.0
     labels:
       - 'wud.display.icon=sh:grafana'
@@ -80,7 +80,7 @@ services:
     user: "472"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-prov:/etc/grafana/provisioning:ro
 
   node-exporter:
     command:
@@ -98,7 +98,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    hostname: rpi-exporter
+    hostname: monitoring-exporter
     image: prom/node-exporter:v1.10.2
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -136,7 +136,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    hostname: rpi-prometheus
+    hostname: monitoring-prometheus
     image: prom/prometheus:v3.10.0
     labels:
       - 'wud.display.icon=sh:prometheus'
@@ -151,9 +151,11 @@ services:
     restart: unless-stopped
     user: "nobody"
     volumes:
-      - ./prometheus:/etc/prometheus:ro
-      - prometheus-data:/prometheus
+      - prom-etc:/etc/prometheus:ro
+      - prom-data:/prometheus
 
 volumes:
   grafana-data:
-  prometheus-data:
+  grafana-prov:
+  prom-data:
+  prom-etc:
