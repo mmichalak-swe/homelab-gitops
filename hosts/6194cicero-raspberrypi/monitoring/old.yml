@@ -1,0 +1,156 @@
+# https://github.com/oijkn/Docker-Raspberry-PI-Monitoring
+networks:
+  caddy-net:
+    name: caddy-net
+    external: true
+
+services:
+  grafana:
+    container_name: monitoring-grafana
+    image: grafana/grafana:12.4.0
+    hostname: rpi-grafana
+    restart: unless-stopped
+    user: "472"
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.11
+    expose:
+      - 3000
+    env_file:
+      - ./grafana/.env
+    healthcheck:
+      test: curl -X GET localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      # /!\ To be modified depending on your needs /!\
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+    labels:
+      - 'wud.display.icon=sh:grafana'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/grafana/grafana/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+  cadvisor:
+    container_name: monitoring-cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    hostname: rpi-cadvisor
+    restart: unless-stopped
+    privileged: true
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.12
+    expose:
+      - 8080
+    command:
+      - '-housekeeping_interval=15s'
+      - '-docker_only=true'
+      - '-store_container_labels=false'
+      # - '-port=9080'
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+#       - /var/run:/var/run:rw
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+    labels:
+      - 'wud.display.icon=sh:cadvisor'
+      # - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.tag.include=^v\d+(?:\.\d{1,2})?\.\d+$$'
+      - 'wud.link.template=https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+  node-exporter:
+    container_name: monitoring-node-exporter
+    image: prom/node-exporter:v1.10.2
+    hostname: rpi-exporter
+    restart: unless-stopped
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.13
+    expose:
+      - 9100
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/host
+      - --collector.filesystem.ignored-mount-points
+      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:9100/metrics || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /:/host:ro,rslave
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/prometheus/node_exporter/releases/tag/v$${major}.$${minor}.$${patch}'
+
+
+  prometheus:
+    container_name: monitoring-prometheus
+    image: prom/prometheus:v3.10.0
+    hostname: rpi-prometheus
+    restart: unless-stopped
+    user: "nobody"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=1y'
+      # /!\ Uncomment the following line to set a size limit for the Prometheus database /!\
+      - '--storage.tsdb.retention.size=10GB'
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.14
+    expose:
+      - 9090
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9090/-/healthy || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      # /!\ To be modified depending on your needs /!\
+      - ./prometheus/data:/prometheus
+      - ./prometheus:/etc/prometheus/
+    depends_on:
+      - cadvisor
+      - node-exporter
+    links:
+      - cadvisor:cadvisor
+      - node-exporter:node-exporter
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "256m"
+    labels:
+      - 'wud.display.icon=sh:prometheus'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.link.template=https://github.com/prometheus/prometheus/releases/tag/v$${major}.$${minor}.$${patch}'
