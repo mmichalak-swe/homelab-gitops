@@ -24,7 +24,7 @@ services:
     labels:
       - 'wud.display.icon=sh:actual-budget'
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - 'wud.link.template=hhttps://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
+      - 'wud.link.template=https://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
     logging:
       driver: "json-file"
       options:
