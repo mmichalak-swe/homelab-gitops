@@ -139,7 +139,7 @@ services:
     volumes:
       # /!\ To be modified depending on your needs /!\
       - ./prometheus/data:/prometheus
-      - ./prometheus:/etc/prometheus/
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - cadvisor
       - node-exporter
