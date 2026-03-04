@@ -1,5 +1,5 @@
 ---
-- name: host initial config
+- name: rpi initial config
   hosts: localhost
   become: true
   vars:
