@@ -1,0 +1,106 @@
+---
+- name: host initial config
+  hosts: localhost
+  become: true
+  vars:
+    # Automatically detect the user who invoked the playbook
+    target_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+
+    sysctl_files:
+      - name: "86-unbound.conf"
+        content: |
+          # Optional network buffer tweaks for Unbound DNS
+          net.core.rmem_max=2097152
+          net.core.rmem_default=2097152
+      - name: "87-wireguard.conf"
+        content: |
+          # WireGuard VPN routing
+          net.ipv4.ip_forward=1
+          net.ipv6.conf.all.forwarding=1
+          net.ipv6.conf.eth0.accept_ra=2
+      - name: "88-rpi.conf"
+        content: |
+          # Optional Raspberry Pi kernel tweaks
+          kernel.printk = 3 4 1 3
+          vm.min_free_kbytes = 16384
+          net.ipv4.ping_group_range = 0 2147483647
+          vm.swappiness=40
+
+    bash_aliases_content: |
+      alias update_system='sudo apt update && sudo apt full-upgrade && sudo apt autoclean && sudo apt autoremove'
+      alias size_M='ls -l --block-size=M'
+      alias size_K='ls -l --block-size=K'
+      alias ll='ls -AlF'
+      alias la='ls -AF'
+      alias l='ls -CF'
+      alias ..='cd ..'
+      alias mv="mv -v"
+      alias rm="rm -vi"
+      alias cp="cp -v"
+      alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
+
+    sudoers_custom_content: "{{ target_user }} ALL=(ALL) NOPASSWD: ALL"
+
+    sshd_custom_content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      PermitEmptyPasswords no
+      AllowUsers {{ target_user }}
+      PubkeyAuthentication yes
+      MaxAuthTries 3
+
+  tasks:
+
+    - name: Show which user will be configured
+      debug:
+        msg: "The target user is {{ target_user }}"
+
+    - name: Fail if target_user is not defined
+      fail:
+        msg: "target_user variable must be defined!"
+      when: target_user is not defined
+
+    - name: Ensure sysctl files exist
+      copy:
+        dest: "/etc/sysctl.d/{{ item.name }}"
+        content: "{{ item.content }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ sysctl_files }}"
+      notify: Reload sysctl
+
+    - name: Ensure ~/.bash_aliases exists
+      copy:
+        dest: "/home/{{ target_user }}/.bash_aliases"
+        content: "{{ bash_aliases_content }}"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        mode: '0644'
+
+    - name: Ensure /etc/sudoers/90_ansible-setup exists
+      copy:
+        dest: "/etc/sudoers.d/90_ansible-setup"
+        content: "{{ sudoers_custom_content }}"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: 'visudo -cf %s'
+
+    - name: Ensure /etc/ssh/sshd_config.d/90_ansible-setup exists
+      copy:
+        dest: "/etc/ssh/sshd_config.d/90_ansible-setup"
+        content: "{{ sshd_custom_content }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart SSH
+
+  handlers:
+    - name: Reload sysctl
+      command: sysctl --system
+
+    - name: Restart SSH
+      service:
+        name: sshd
+        state: restarted
