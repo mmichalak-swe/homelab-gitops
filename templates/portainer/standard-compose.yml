@@ -5,6 +5,10 @@ networks:
 
 services:
   service_name::
+    cap_drop:
+      - ALL
+    cap_add:
+      - ALL
     container_name: <service_name>
     dns: <check pihole container IP on host's caddy-net>
     deploy:
@@ -12,8 +16,8 @@ services:
         limits:
           memory: 256M
     environment:
-      - VAR_ONE=${VAR_ONE}
-      - VAR_TWO=${VAR_TWO}
+      - UID=${UID}
+      - GID=${GID}
     expose:
       - <port>
     healthcheck:
@@ -35,7 +39,10 @@ services:
     networks:
       caddy-net:
         ipv4_address: <see host caddy-net CIDR>
+    ports:
+      - '<host-port>:<container-port>'
     restart: unless-stopped
+    user: ${UID}:${GID}
     volumes:
       - data:/config
 
