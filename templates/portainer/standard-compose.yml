@@ -1,0 +1,43 @@
+networks:
+  caddy-net:
+    name: caddy-net
+    external: true
+
+services:
+  service_name::
+    container_name: <service_name>
+    dns: <check pihole container IP on host's caddy-net>
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      - VAR_ONE=${VAR_ONE}
+      - VAR_TWO=${VAR_TWO}
+    expose:
+      - <port>
+    healthcheck:
+      test: ["CMD-SHELL", "<healthcheck command> || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    hostname: <service_name>
+    image: <image-name>:<tag>
+    labels:
+      - 'wud.display.icon=sh:<project-name>'
+      - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
+      - 'wud.link.template=https://github.com/<organization>/<project>/releases/tag/$${raw}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "128m"
+    networks:
+      caddy-net:
+        ipv4_address: <see host caddy-net CIDR>
+    restart: unless-stopped
+    volumes:
+      - data:/config
+
+volumes:
+  data:
