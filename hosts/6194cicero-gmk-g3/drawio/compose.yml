@@ -20,7 +20,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: drawio
-    image: jgraph/drawio:29.5.2
+    image: jgraph/drawio:29.6.1
     labels:
       - 'wud.display.icon=sh:draw-io'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
