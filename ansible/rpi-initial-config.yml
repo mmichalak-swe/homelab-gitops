@@ -42,12 +42,16 @@
     sudoers_custom_content: "{{ target_user }} ALL=(ALL) NOPASSWD: ALL"
 
     sshd_custom_content: |
-      PermitRootLogin no
+      AllowTcpForwarding no
+      AllowUsers {{ target_user }}
+      AuthenticationMethods publickey
+      LoginGraceTime 30
+      MaxAuthTries 3
       PasswordAuthentication no
       PermitEmptyPasswords no
-      AllowUsers {{ target_user }}
+      PermitRootLogin no
       PubkeyAuthentication yes
-      MaxAuthTries 3
+      X11Forwarding no
 
   tasks:
 
@@ -87,9 +91,9 @@
         mode: '0440'
         validate: 'visudo -cf %s'
 
-    - name: Ensure /etc/ssh/sshd_config.d/90_ansible-setup exists
+    - name: Ensure /etc/ssh/sshd_config.d/90_ansible-setup.conf exists
       copy:
-        dest: "/etc/ssh/sshd_config.d/90_ansible-setup"
+        dest: "/etc/ssh/sshd_config.d/90_ansible-setup.conf"
         content: "{{ sshd_custom_content }}"
         owner: root
         group: root
