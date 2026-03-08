@@ -55,7 +55,7 @@ services:
     read_only: true
     restart: unless-stopped
     tmpfs:
-      - /run:rw,nosuid,nodev
+      - /run:rw,exec,nosuid,nodev
       - /tmp:rw,nosuid,nodev
     volumes:
       - data:/config
