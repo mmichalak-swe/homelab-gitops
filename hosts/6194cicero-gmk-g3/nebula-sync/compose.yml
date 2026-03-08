@@ -5,6 +5,8 @@ networks:
 
 services:
   nebula-sync:
+    cap_drop:
+      - ALL
     container_name: nebula-sync
     dns: 172.19.0.2
     deploy:
@@ -45,4 +47,7 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.20
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
