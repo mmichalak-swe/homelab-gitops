@@ -52,11 +52,7 @@ services:
         ipv4_address: 172.19.0.24
     security_opt:
       - no-new-privileges:true
-    read_only: true
     restart: unless-stopped
-    tmpfs:
-      - /run:rw,exec,nosuid,nodev
-      - /tmp:rw,nosuid,nodev
     volumes:
       - data:/config
 
