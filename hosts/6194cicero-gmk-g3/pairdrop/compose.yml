@@ -5,6 +5,11 @@ networks:
 
 services:
   pairdrop:
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
     cap_drop:
       - ALL
     container_name: pairdrop
