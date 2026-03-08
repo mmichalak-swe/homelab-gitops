@@ -5,6 +5,8 @@ networks:
 
 services:
   drawio:
+    cap_drop:
+      - ALL
     container_name: drawio
     dns: 172.19.0.2
     deploy:
@@ -32,4 +34,13 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.22
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+      - /run:rw,noexec,nosuid,nodev,size=16m
+      - /usr/local/tomcat/temp:rw,noexec,nosuid,nodev,size=64m
+      - /usr/local/tomcat/work:rw,noexec,nosuid,nodev,size=128m
+      - /usr/local/tomcat/logs:rw,noexec,nosuid,nodev,size=32m
