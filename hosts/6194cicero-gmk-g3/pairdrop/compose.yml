@@ -20,8 +20,6 @@ services:
           memory: 256M
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
-      - PGID=${PGID}
-      - PUID=${PUID}
       - RATE_LIMIT=${RATE_LIMIT}
       - TZ=${TZ}
       - WS_FALLBACK=${WS_FALLBACK}
