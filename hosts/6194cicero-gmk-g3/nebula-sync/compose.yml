@@ -12,7 +12,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 64M
     environment:
       - CRON=${CRON}
       - FULL_SYNC=${FULL_SYNC}
