@@ -7,7 +7,7 @@ services:
   speedtest:
     cap_add:
       - CHOWN
-      - DAC_OVERRIDE
+      # - DAC_OVERRIDE
       - FOWNER
       - SETGID
       - SETUID
@@ -53,9 +53,6 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    tmpfs:
-      - /run:rw,exec,nosuid,nodev
-      - /tmp:rw,nosuid,nodev
     volumes:
       - data:/config
 
