@@ -5,12 +5,14 @@ networks:
 
 services:
   actual_server:
+    cap_drop:
+      - ALL
     container_name: actual-server
     dns: 172.19.0.2
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
     expose:
       - 5006
     healthcheck:
@@ -32,7 +34,12 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.23
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
     volumes:
       - data:/data
 
