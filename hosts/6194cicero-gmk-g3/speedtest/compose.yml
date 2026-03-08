@@ -5,6 +5,13 @@ networks:
 
 services:
   speedtest:
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
+    cap_drop:
+      - ALL
     container_name: speedtest
     dns: 172.19.0.2
     deploy:
@@ -43,7 +50,13 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.24
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     restart: unless-stopped
+    tmpfs:
+      - /run:rw,nosuid,nodev
+      - /tmp:rw,nosuid,nodev
     volumes:
       - data:/config
 

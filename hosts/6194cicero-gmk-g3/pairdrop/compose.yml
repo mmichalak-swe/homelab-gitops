@@ -51,4 +51,4 @@ services:
     read_only: true
     restart: unless-stopped
     tmpfs:
-      - /run:exec
+      - /run:rw,exec,nosuid,nodev
