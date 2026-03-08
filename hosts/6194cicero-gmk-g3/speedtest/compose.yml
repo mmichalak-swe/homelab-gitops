@@ -50,9 +50,10 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.24
+    read_only: true
+    restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    restart: unless-stopped
     tmpfs:
       - /run:rw,exec,nosuid,nodev
       - /tmp:rw,nosuid,nodev
