@@ -5,13 +5,13 @@ networks:
 
 services:
   speedtest:
-    cap_add:
-      - CHOWN
-      - SETUID
-      - SETGID
-      - FOWNER
-    cap_drop:
-      - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETUID
+    #   - SETGID
+    #   - FOWNER
+    # cap_drop:
+    #   - ALL
     container_name: speedtest
     dns: 172.19.0.2
     deploy:
@@ -53,6 +53,9 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    tmpfs:
+      - /run:rw,exec,nosuid,nodev
+      - /tmp:rw,nosuid,nodev
     volumes:
       - data:/config
 
