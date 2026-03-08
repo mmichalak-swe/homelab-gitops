@@ -44,3 +44,6 @@ services:
       - /usr/local/tomcat/temp:rw,noexec,nosuid,nodev,size=64m
       - /usr/local/tomcat/work:rw,noexec,nosuid,nodev,size=128m
       - /usr/local/tomcat/logs:rw,noexec,nosuid,nodev,size=32m
+      - /usr/local/tomcat/webapps/draw/js/PreConfig.js:rw,nosuid,nodev,size=1m
+      - /usr/local/tomcat/webapps/draw/js/PostConfig.js:rw,nosuid,nodev,size=1m
+      - /usr/local/tomcat/.keystore:rw,nosuid,nodev,size=1m
