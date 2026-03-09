@@ -23,7 +23,7 @@ services:
     image: actualbudget/actual-server:26.3.0-alpine
     labels:
       - 'wud.display.icon=sh:actual-budget'
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - 'wud.link.template=https://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
     logging:
       driver: "json-file"
