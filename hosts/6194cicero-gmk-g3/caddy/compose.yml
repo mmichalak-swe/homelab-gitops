@@ -61,7 +61,7 @@ services:
       - /var/run:rw,noexec,nosuid,nodev,size=16m
     user: "65534:65534"
     volumes:
-      - conf:/etc/caddy
+      - conf:/etc/caddy:ro
       - config:/config
       - data:/data
       - site:/srv:ro
