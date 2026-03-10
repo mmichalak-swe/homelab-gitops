@@ -79,7 +79,7 @@ services:
       - no-new-privileges:true
     user: "101:102"
     volumes:
-      - unbound-config:/opt/unbound/etc/unbound
+      - unbound-config:/etc/unbound
 
 
 volumes:
