@@ -32,7 +32,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: caddy
-    image: caddy:2.11.1-alpine-custom-porkbun
+    image: caddy:2.11.2-alpine-custom-porkbun
     labels:
       - 'wud.display.icon=sh:caddy'
       - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
