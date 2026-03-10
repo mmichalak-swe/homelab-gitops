@@ -18,6 +18,10 @@ services:
     #     FROM caddy:2.11.1-alpine
     #     COPY --from=builder /usr/bin/caddy /usr/bin/caddy
     #     RUN apk add --no-cache curl
+    cap_add:
+      - NET_BIND_SERVICE
+    cap_drop:
+      - ALL
     container_name: caddy
     dns: 172.19.0.2
     environment:
@@ -48,7 +52,14 @@ services:
       - '443:443'
     # pull_policy: build
     pull_policy: never
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+      - /var/run:rw,noexec,nosuid,nodev,size=16m
+    user: "65534:65534"
     volumes:
       - conf:/etc/caddy
       - config:/config

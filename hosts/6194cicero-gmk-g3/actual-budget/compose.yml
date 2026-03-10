@@ -40,7 +40,7 @@ services:
       - no-new-privileges:true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m
-    user: 1001:1001
+    user: "1001:1001"
     volumes:
       - data:/data
 
