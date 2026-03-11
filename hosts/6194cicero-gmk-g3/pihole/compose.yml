@@ -52,7 +52,7 @@ services:
       - /tmp
       - /var/run
       - /var/log
-    user: "1000:1000"
+    # user: "1000:1000"
     volumes:
       - etc-pihole:/etc/pihole
 
