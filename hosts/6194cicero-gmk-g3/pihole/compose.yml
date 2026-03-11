@@ -18,6 +18,7 @@ services:
         limits:
           memory: 512M
     environment:
+      - DNSMASQ_GROUP=${DNSMASQ_GROUP}
       - DNSMASQ_USER=${DNSMASQ_USER}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
       - FTLCONF_dns_dnssec=${FTLCONF_dns_dnssec}
@@ -26,8 +27,8 @@ services:
       - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
       - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
       - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
-      - PIHOLE_UID=${PIHOLE_UID}
       - PIHOLE_GID=${PIHOLE_GID}
+      - PIHOLE_UID=${PIHOLE_UID}
       - TZ=${TZ}
     expose:
       - 80
@@ -54,8 +55,8 @@ services:
     tmpfs:
       - /tmp
       - /var/run
-      - /var/log
-      - /var/spool
+      # - /var/log
+      # - /var/spool
     # user: "1000:1000"
     volumes:
       - etc-pihole:/etc/pihole
