@@ -6,13 +6,14 @@ networks:
 services:
   pihole-gmkg3:
     cap_add:
-      - NET_BIND_SERVICE
       - CHOWN                 # entrypoint chowns files
-      - FOWNER                # chmod/chown operations
       - DAC_OVERRIDE          # bypass normal permission checks
+      - FOWNER                # chmod/chown operations
+      - NET_BIND_SERVICE
       - SETFCAP               # set file capabilities on binaries
       - SETGID                # set group ID and supplementary groups
       - SETPCAP               # so FTL can call setcap/setfcap
+      - SETUID                # set user ID
     cap_drop:
       - ALL
     container_name: pihole-gmkg3
