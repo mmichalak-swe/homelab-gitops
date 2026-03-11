@@ -18,12 +18,13 @@ services:
         limits:
           memory: 512M
     environment:
-      - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
+      - DNSMASQ_USER=${DNSMASQ_USER}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
       - FTLCONF_dns_dnssec=${FTLCONF_dns_dnssec}
       - FTLCONF_dns_domainNeeded=${FTLCONF_dns_domainNeeded}
       - FTLCONF_dns_listeningMode=${FTLCONF_dns_listeningMode}
       - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
+      - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
       - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
       - TZ=${TZ}
     expose:
@@ -52,6 +53,7 @@ services:
       - /tmp
       - /var/run
       - /var/log
+      - /var/spool
     # user: "1000:1000"
     volumes:
       - etc-pihole:/etc/pihole
