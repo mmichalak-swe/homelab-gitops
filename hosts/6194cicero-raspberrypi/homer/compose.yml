@@ -5,6 +5,8 @@ networks:
 
 services:
   homer:
+    cap_drop:
+      - ALL
     container_name: homer
     deploy:
       resources:
@@ -28,7 +30,14 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.18.0.23
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /run
+      - /var/run
     user: 1000:1000
     volumes:
       - assets:/www/assets
