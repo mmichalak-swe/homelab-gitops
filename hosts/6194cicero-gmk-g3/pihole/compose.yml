@@ -11,7 +11,7 @@ services:
       - SETFCAP
       - SETUID
       - SETGID
-      - NET_ADMIN
+      # - NET_ADMIN
     cap_drop:
       - ALL
     container_name: pihole-gmkg3
