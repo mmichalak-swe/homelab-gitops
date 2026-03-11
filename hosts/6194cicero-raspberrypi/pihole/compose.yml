@@ -14,13 +14,16 @@ services:
           memory: 512M
     entrypoint: ["/startup/startup_wg.sh"]
     environment:
-      - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
+      - DNSMASQ_USER=${DNSMASQ_USER}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
       - FTLCONF_dns_dnssec=${FTLCONF_dns_dnssec}
       - FTLCONF_dns_domainNeeded=${FTLCONF_dns_domainNeeded}
       - FTLCONF_dns_listeningMode=${FTLCONF_dns_listeningMode}
+      - FTLCONF_dns_reply_host_IPv4=${FTLCONF_dns_reply_host_IPv4}
       - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
       - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
+      - PIHOLE_GID=${PIHOLE_GID}
+      - PIHOLE_UID=${PIHOLE_UID}
       - TZ=${TZ}
     expose:
       - 80
