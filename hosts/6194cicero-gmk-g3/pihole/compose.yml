@@ -6,6 +6,7 @@ networks:
 services:
   pihole-gmkg3:
     cap_add:
+      - CAP_CHOWN
       - NET_BIND_SERVICE
     cap_drop:
       - ALL
