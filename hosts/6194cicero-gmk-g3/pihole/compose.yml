@@ -51,15 +51,13 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-    read_only: true
+    read_only: false
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-      - /var/log
-      - /var/spool
     volumes:
       - etc-pihole:/etc/pihole
 
