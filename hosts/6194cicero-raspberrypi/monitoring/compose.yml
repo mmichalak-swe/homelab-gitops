@@ -151,6 +151,7 @@ services:
       - /:/host:ro,rslave
       - /:/rootfs:ro
       - /proc:/host/proc:ro
+      - /run/udev:/run/udev:ro
       - /sys:/host/sys:ro
 
   prometheus:
