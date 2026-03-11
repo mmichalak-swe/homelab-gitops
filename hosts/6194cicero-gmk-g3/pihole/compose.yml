@@ -62,7 +62,6 @@ services:
       - /run
       - /var/run
       - /var/log/pihole
-      - /var/spool/cron
     volumes:
       - etc-pihole:/etc/pihole
 
