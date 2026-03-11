@@ -5,6 +5,10 @@ networks:
 
 services:
   pihole-gmkg3:
+    cap_add:
+      - NET_BIND_SERVICE
+    cap_drop:
+      - ALL
     container_name: pihole-gmkg3
     depends_on:
       unbound:
@@ -40,10 +44,17 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/log
+    user: "1000:1000"
     volumes:
       - etc-pihole:/etc/pihole
-      - etc-dnsmasqd:/etc/dnsmasq.d
 
 
   unbound:
