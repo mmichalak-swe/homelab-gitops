@@ -10,7 +10,8 @@ services:
       - CHOWN                 # entrypoint chowns files
       - FOWNER                # chmod/chown operations
       - DAC_OVERRIDE          # bypass normal permission checks
-      - SETFCAP
+      - SETFCAP               # set file capabilities on binaries
+      - SETGID                # set group ID and supplementary groups
       - SETPCAP               # so FTL can call setcap/setfcap
     cap_drop:
       - ALL
