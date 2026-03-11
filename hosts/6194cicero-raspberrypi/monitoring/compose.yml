@@ -43,7 +43,6 @@ services:
         max-size: "128m"
     networks:
       monitoring-internal:
-    # privileged: true
     read_only: true
     restart: unless-stopped
     security_opt:
