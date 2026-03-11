@@ -78,7 +78,7 @@ services:
       - /var/run:mode=0755,nosuid,nodev
     user: "1000:1000"
     volumes:
-      - certs:/certs
+      - certs:/certs:ro
       - store:/store
 
   wud-socket-proxy:
