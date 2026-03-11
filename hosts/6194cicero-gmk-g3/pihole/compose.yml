@@ -26,6 +26,8 @@ services:
       - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
       - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
       - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
+      - PIHOLE_UID=${PIHOLE_UID}
+      - PIHOLE_GID=${PIHOLE_GID}
       - TZ=${TZ}
     expose:
       - 80
@@ -45,7 +47,7 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-    read_only: true
+    read_only: false
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -54,7 +56,6 @@ services:
       - /var/run
       - /var/log
       - /var/spool
-    # user: "1000:1000"
     volumes:
       - etc-pihole:/etc/pihole
 
