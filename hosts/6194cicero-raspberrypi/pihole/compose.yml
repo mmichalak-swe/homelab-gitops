@@ -46,7 +46,6 @@ services:
     restart: unless-stopped
     volumes:
       - etc-pihole:/etc/pihole
-      - etc-dnsmasqd:/etc/dnsmasq.d
       - startup:/startup:ro
 
 
