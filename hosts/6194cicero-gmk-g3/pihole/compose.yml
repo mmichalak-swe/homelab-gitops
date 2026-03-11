@@ -59,6 +59,7 @@ services:
     tmpfs:
       - /tmp
       - /var/run
+      - /var/log
       - /var/spool/cron
       - /run
     volumes:
