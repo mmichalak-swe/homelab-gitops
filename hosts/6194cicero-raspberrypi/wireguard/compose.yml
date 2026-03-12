@@ -48,10 +48,6 @@ services:
       - 'wud.display.icon=sh:wireguard'
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d{3,}$$'
       - 'wud.link.template=https://github.com/linuxserver/docker-wireguard/releases/tag/$${raw}'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "128m"
     networks:
       wg-ls-net:
         ipv4_address: 172.18.10.2

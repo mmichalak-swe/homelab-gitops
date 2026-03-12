@@ -28,10 +28,6 @@ services:
       - 'wud.display.icon=sh:authelia'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - 'wud.link.template=https://github.com/authelia/authelia/releases/tag/v$${major}.$${minor}.$${patch}'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 128m
     mem_limit: 512m
     networks:
       caddy-net:
