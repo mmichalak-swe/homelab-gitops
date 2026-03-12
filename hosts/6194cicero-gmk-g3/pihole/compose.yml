@@ -43,10 +43,6 @@ services:
       - 'wud.display.icon=sh:pi-hole'
       - 'wud.tag.include=^\d+(?:\.\d{1,2})?\.\d+$$'
       - 'wud.link.template=https://github.com/pi-hole/docker-pi-hole/releases/tag/$${raw}'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "128m"
     networks:
       caddy-net:
         ipv4_address: 172.19.0.2
@@ -86,10 +82,6 @@ services:
       - 'wud.display.icon=sh:unbound'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - 'wud.link.template=https://github.com/klutchell/unbound-docker/releases/tag/v$${major}.$${minor}.$${patch}'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "128m"
     networks:
       caddy-net:
         ipv4_address: 172.19.0.3
