@@ -33,6 +33,7 @@ services:
       - BACKUP_RETENTION_DAYS=7
       - BACKUP_STOP_DURING_BACKUP_LABEL=test-backup
       - DOCKER_HOST=tcp://volume-backup-socket-proxy:2375
+      - TZ=${TZ}
     # healthcheck:
     #   test: ["CMD-SHELL", "<healthcheck command> || exit 1"]
     #   interval: 30s
