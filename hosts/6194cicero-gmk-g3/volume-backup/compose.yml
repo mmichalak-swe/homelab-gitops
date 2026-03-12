@@ -53,6 +53,7 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.10
+      proxy-net:
     read_only: true
     restart: unless-stopped
     security_opt:
