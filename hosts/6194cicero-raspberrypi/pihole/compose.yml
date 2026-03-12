@@ -106,6 +106,5 @@ services:
 
 volumes:
   etc-pihole:
-  etc-dnsmasqd:
   startup:
   unbound-config:
