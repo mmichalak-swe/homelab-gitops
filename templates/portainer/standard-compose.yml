@@ -10,11 +10,11 @@ services:
     cap_drop:
       - ALL
     container_name: <service_name>
-    dns: <check pihole container IP on host's caddy-net>
     deploy:
       resources:
         limits:
           memory: 256M
+    dns: <check pihole container IP on host's caddy-net>
     environment:
       - UID=${UID}
       - GID=${GID}
