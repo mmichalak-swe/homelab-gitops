@@ -14,7 +14,12 @@ networks:
 services:
   wireguard-ls:
     cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
       - NET_ADMIN
+    cap_drop:
+      - ALL
     container_name: wireguard-ls
     deploy:
       resources:
@@ -22,17 +27,15 @@ services:
           memory: 256M
     dns: 172.18.0.2
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - SERVERURL=${SERVERURL}
-      - SERVERPORT=${SERVERPORT}
+      - ALLOWEDIPS=${ALLOWEDIPS}
+      - INTERNAL_SUBNET=${INTERNAL_SUBNET}
+      - LOG_CONFS=${LOG_CONFS}
       - PEERS=${PEERS}
       - PEERDNS=${PEERDNS}
-      - INTERNAL_SUBNET=${INTERNAL_SUBNET}
-      - ALLOWEDIPS=${ALLOWEDIPS}
       - PERSISTENTKEEPALIVE_PEERS=${PERSISTENTKEEPALIVE_PEERS}
-      - LOG_CONFS=${LOG_CONFS}
+      - SERVERPORT=${SERVERPORT}
+      - SERVERURL=${SERVERURL}
+      - TZ=${TZ}
     healthcheck:
       test: ["CMD-SHELL", "ip link show wg0 &> /dev/null || exit 1"]
       interval: 30s
@@ -58,9 +61,15 @@ services:
         gw_priority: 0
     ports:
       - ${SERVERPORT}:51820/udp
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
+    tmpfs:
+      - /run:exec
+      - /tmp
     volumes:
       - config:/config
 

@@ -5,6 +5,16 @@ networks:
 
 services:
   pihole-gmkg3:
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - NET_BIND_SERVICE
+      - SETFCAP
+      - SETUID
+      - SETGID
+    cap_drop:
+      - ALL
     container_name: pihole-gmkg3
     depends_on:
       unbound:
@@ -14,13 +24,16 @@ services:
         limits:
           memory: 512M
     environment:
-      - FTLCONF_LOCAL_IPV4=${FTLCONF_LOCAL_IPV4}
+      - DNSMASQ_USER=${DNSMASQ_USER}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}
       - FTLCONF_dns_dnssec=${FTLCONF_dns_dnssec}
       - FTLCONF_dns_domainNeeded=${FTLCONF_dns_domainNeeded}
       - FTLCONF_dns_listeningMode=${FTLCONF_dns_listeningMode}
+      - FTLCONF_dns_reply_host_IPv4=${FTLCONF_dns_reply_host_IPv4}
       - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
       - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
+      - PIHOLE_GID=${PIHOLE_GID}
+      - PIHOLE_UID=${PIHOLE_UID}
       - TZ=${TZ}
     expose:
       - 80
@@ -40,20 +53,29 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+    read_only: false
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /run
+      - /var/run
+      - /var/log/pihole
     volumes:
       - etc-pihole:/etc/pihole
-      - etc-dnsmasqd:/etc/dnsmasq.d
 
 
   unbound:
+    cap_drop:
+      - ALL
     container_name: unbound
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
     healthcheck:
-      test: ['CMD', 'drill-hc', '@127.0.0.1', 'dnssec.works']
+      test: ['CMD', 'drill-hc', '@172.19.0.3', 'dnssec.works']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -71,12 +93,15 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.3
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "101:102"
     volumes:
-      - unbound-config:/opt/unbound/etc/unbound
+      - unbound-config:/etc/unbound
 
 
 volumes:
   etc-pihole:
-  etc-dnsmasqd:
   unbound-config:

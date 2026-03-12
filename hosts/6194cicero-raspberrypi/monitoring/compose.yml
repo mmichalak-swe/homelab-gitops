@@ -16,6 +16,12 @@ networks:
 
 services:
   cadvisor:
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_READ_SEARCH
+    cap_drop:
+      - ALL
     command:
       - '-docker_only=true'
       - '-housekeeping_interval=15s'
@@ -37,8 +43,12 @@ services:
         max-size: "128m"
     networks:
       monitoring-internal:
-    privileged: true
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777,noexec,nosuid,nodev,size=64m
     volumes:
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
@@ -48,6 +58,8 @@ services:
       - /var/run:/var/run:ro
 
   grafana:
+    cap_drop:
+      - ALL
     container_name: monitoring-grafana
     depends_on:
       prometheus:
@@ -86,13 +98,21 @@ services:
       caddy-net:
         ipv4_address: 172.18.0.11
       monitoring-internal:
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777,noexec,nosuid,nodev
+      - /run:mode=0755,nosuid,nodev
     user: "472"
     volumes:
       - grafana-data:/var/lib/grafana
       - grafana-prov:/etc/grafana/provisioning:ro
 
   node-exporter:
+    cap_drop:
+      - ALL
     command:
       - --collector.filesystem.ignored-mount-points
       - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
@@ -119,14 +139,23 @@ services:
         max-size: "128m"
     networks:
       monitoring-internal:
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777,noexec,nosuid,nodev
+    user: "65534:65534"
     volumes:
       - /:/host:ro,rslave
       - /:/rootfs:ro
       - /proc:/host/proc:ro
+      - /run/udev:/run/udev:ro
       - /sys:/host/sys:ro
 
   prometheus:
+    cap_drop:
+      - ALL
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -158,7 +187,12 @@ services:
         max-size: "128m"
     networks:
       monitoring-internal:
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777,noexec,nosuid,nodev
     user: "nobody"
     volumes:
       - prom-etc:/etc/prometheus:ro

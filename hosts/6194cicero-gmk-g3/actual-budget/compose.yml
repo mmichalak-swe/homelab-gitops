@@ -5,12 +5,14 @@ networks:
 
 services:
   actual_server:
+    cap_drop:
+      - ALL
     container_name: actual-server
     dns: 172.19.0.2
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
     expose:
       - 5006
     healthcheck:
@@ -23,7 +25,7 @@ services:
     image: actualbudget/actual-server:26.3.0-alpine
     labels:
       - 'wud.display.icon=sh:actual-budget'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine$$'
       - 'wud.link.template=https://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
     logging:
       driver: "json-file"
@@ -32,7 +34,13 @@ services:
     networks:
       caddy-net:
         ipv4_address: 172.19.0.23
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    user: "1001:1001"
     volumes:
       - data:/data
 

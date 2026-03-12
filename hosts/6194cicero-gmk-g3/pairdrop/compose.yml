@@ -5,6 +5,13 @@ networks:
 
 services:
   pairdrop:
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
+    cap_drop:
+      - ALL
     container_name: pairdrop
     dns: 172.19.0.2
     deploy:
@@ -13,8 +20,6 @@ services:
           memory: 256M
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
-      - PGID=${PGID}
-      - PUID=${PUID}
       - RATE_LIMIT=${RATE_LIMIT}
       - TZ=${TZ}
       - WS_FALLBACK=${WS_FALLBACK}
@@ -41,5 +46,7 @@ services:
         ipv4_address: 172.19.0.21
     read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     tmpfs:
-      - /run:exec
+      - /run:rw,exec,nosuid,nodev

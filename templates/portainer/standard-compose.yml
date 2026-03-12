@@ -4,10 +4,10 @@ networks:
     external: true
 
 services:
-  service_name::
-    cap_drop:
-      - ALL
+  service_name:
     cap_add:
+      - ALL
+    cap_drop:
       - ALL
     container_name: <service_name>
     dns: <check pihole container IP on host's caddy-net>
@@ -41,7 +41,10 @@ services:
         ipv4_address: <see host caddy-net CIDR>
     ports:
       - '<host-port>:<container-port>'
+    read_only: true
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     user: ${UID}:${GID}
     volumes:
       - data:/config
