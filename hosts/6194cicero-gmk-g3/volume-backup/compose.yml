@@ -14,11 +14,11 @@ services:
         limits:
           memory: 256M
     environment:
-      - BACKUP_CRON_EXPRESSION="0 0 5 31 2 ?"
-      - BACKUP_FILENAME="speedtest_data-%Y-%m-%dT%H-%M-%S.tar.gz"
-      - BACKUP_PRUNING_PREFIX="speedtest_data-"
-      - BACKUP_RETENTION_DAYS="7"
-      - BACKUP_STOP_DURING_BACKUP_LABEL="test-backup"
+      - BACKUP_CRON_EXPRESSION=0 0 5 31 2 ?
+      - BACKUP_FILENAME=speedtest_data-%Y-%m-%dT%H-%M-%S.tar.gz
+      - BACKUP_PRUNING_PREFIX=speedtest_data-
+      - BACKUP_RETENTION_DAYS=7
+      - BACKUP_STOP_DURING_BACKUP_LABEL=test-backup
     # healthcheck:
     #   test: ["CMD-SHELL", "<healthcheck command> || exit 1"]
     #   interval: 30s
