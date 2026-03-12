@@ -1,0 +1,18 @@
+{
+  "hosts": [
+    "unix:///var/run/docker.sock",
+    "tcp://{DOCKER_HOST_IP}:2376"
+  ],
+  "icc": false,
+  "live-restore": true,
+  "log-driver": "local",
+  "log-opts": {
+    "max-size": "16m",
+    "max-file": "3"
+  },
+  "tls": true,
+  "tlsverify": true,
+  "tlscacert": "/etc/docker/certs/ca.pem",
+  "tlscert": "/etc/docker/certs/server-cert.pem",
+  "tlskey": "/etc/docker/certs/server-key.pem"
+}

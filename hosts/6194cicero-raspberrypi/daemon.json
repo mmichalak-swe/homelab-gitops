@@ -1,0 +1,9 @@
+{
+  "icc": false,
+  "live-restore": true,
+  "log-driver": "local",
+  "log-opts": {
+    "max-size": "16m",
+    "max-file": "3"
+  }
+}
