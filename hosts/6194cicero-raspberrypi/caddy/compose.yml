@@ -36,10 +36,6 @@ services:
       - 'wud.display.icon=sh:caddy'
       - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
       - 'wud.link.template=https://github.com/caddyserver/caddy/releases/tag/v$${major}.$${minor}.$${patch}'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "128m"
     networks:
       caddy-net:
         ipv4_address: 172.18.0.5
