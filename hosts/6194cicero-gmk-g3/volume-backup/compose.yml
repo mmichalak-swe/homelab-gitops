@@ -57,7 +57,7 @@ services:
     tmpfs:
       - /tmp
       - /var/lock
-    user: 911:911
+    user: "911:911"
     volumes:
       - speedtest_data:/backup/speedtest:ro
       - /tmp/docker-volume-backup-speedtest:/archive
