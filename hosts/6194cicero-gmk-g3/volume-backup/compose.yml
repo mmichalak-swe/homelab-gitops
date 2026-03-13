@@ -72,7 +72,7 @@ services:
       - ALLOW_RESTARTS=0
       - ALLOW_PAUSE=0
       - ALLOW_UNPAUSE=0
-      - CONTAINERS=1
+      - CONTAINERS=0
       - INFO=1
       - PING=1
       - SOCKET_PATH=/var/run/docker.sock
