@@ -41,7 +41,7 @@ services:
     #   retries: 3
     #   start_period: 10s
     hostname: volume-backup
-    image: offen/docker-volume-backup:v2.47.2
+    image: offen/docker-volume-backup:v2.47.2-tzdata-test
     labels:
       - 'wud.display.icon=sh:docker-volume-backup'
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
