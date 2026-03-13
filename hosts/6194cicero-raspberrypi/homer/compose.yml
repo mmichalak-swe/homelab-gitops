@@ -34,7 +34,7 @@ services:
       - /tmp:mode=1777,noexec,nosuid,nodev
       - /run:mode=0755,nosuid,nodev
       - /var/run:mode=0755,nosuid,nodev
-    user: 1000:1000
+    user: "1000:1000"
     volumes:
       - assets:/www/assets
 
