@@ -45,7 +45,7 @@ services:
     tmpfs:
       - /tmp
       - /run
-    user: ${UID}:${GID}
+    user: "${UID}:${GID}""
     volumes:
       - data:/config
 
