@@ -33,7 +33,7 @@ services:
       - BACKUP_RETENTION_DAYS=7
       - BACKUP_STOP_DURING_BACKUP_LABEL=test-backup
       - DOCKER_HOST=tcp://volume-backup-socket-proxy:2375
-      - TZ=${TZ}
+      # - TZ=${TZ}
     # healthcheck:
     #   test: ["CMD-SHELL", "<healthcheck command> || exit 1"]
     #   interval: 30s
@@ -59,9 +59,9 @@ services:
       - /var/lock
     user: "911:911"
     volumes:
-      # - /etc/timezone:/etc/timezone:ro
-      # - /etc/localtime:/etc/localtime:ro
-      # - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - speedtest_data:/backup/speedtest:ro
       - /tmp/docker-volume-backup-speedtest:/archive
 
