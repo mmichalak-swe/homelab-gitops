@@ -187,12 +187,12 @@ jobs:
         run: |
           echo "## 🔍 Trivy Vulnerability Scan Summary" > comment.md
           echo "" >> comment.md
-          echo "Images scanned:" >> comment.md
+          echo "###Images scanned:" >> comment.md
           echo '```' >> comment.md
           printf '%s' '${{ needs.discover-images.outputs.images }}' | jq -r '.[]' >> comment.md
           echo '```' >> comment.md
           echo "" >> comment.md
-          echo "### Per-image vulnerabilities" >> comment.md
+          echo "### Per-image vulnerabilities:" >> comment.md
           echo "" >> comment.md
 
           FOUND_JSON=0
@@ -221,9 +221,8 @@ jobs:
 
           if [ "$FOUND_JSON" -eq 1 ]; then
             echo "### 📄 Full Reports" >> comment.md
-            echo "The complete Trivy JSON reports are uploaded as artifacts (one per image)." >> comment.md
+            echo "All per-image Trivy artifacts ->" >> comment.md
             echo "" >> comment.md
-            echo "Artifacts (tables + JSON):" >> comment.md
             echo "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> comment.md
             echo "" >> comment.md
           fi
