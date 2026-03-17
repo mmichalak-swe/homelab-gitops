@@ -1,8 +1,8 @@
-name: Trivy Scan Dependabot PRs
+name: Trivy Scan PRs
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -11,7 +11,13 @@ permissions:
 jobs:
   discover-images:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.base.ref == 'main' && github.actor == 'dependabot[bot]'
+    if: >
+      github.event.pull_request.base.ref == 'main' &&
+      contains(github.event.pull_request.labels.*.name, 'dependencies') &&
+      (
+        contains(github.event.pull_request.labels.*.name, 'docker') ||
+        contains(github.event.pull_request.labels.*.name, 'docker_compose')
+      )
     outputs:
       images: ${{ steps.images.outputs.images_json }}
     steps:
@@ -35,6 +41,7 @@ jobs:
 
       - name: Extract images from changed compose files
         id: images
+        shell: bash
         run: |
           declare -a IMAGES_ARR=()
 
@@ -69,15 +76,20 @@ jobs:
   trivy:
     needs: discover-images
     runs-on: ubuntu-latest
-    if: success() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    if: >
+      success() &&
+      needs.discover-images.outputs.images != '[]' &&
+      needs.discover-images.outputs.images != ''
     strategy:
       fail-fast: false
       matrix:
         image: ${{ fromJson(needs.discover-images.outputs.images) }}
+
     steps:
       - uses: actions/checkout@v6
 
       - name: Set weekly cache key
+        shell: bash
         run: echo "WEEK=$(date +'%G%V')" >> "$GITHUB_ENV"
 
       - name: Cache Trivy DB (rotates weekly)
@@ -93,6 +105,18 @@ jobs:
         with:
           version: '1.7.1'
 
+      - name: Install Trivy CLI
+        uses: aquasecurity/setup-trivy@v0.2.5
+
+      - name: Prepare per-image filenames
+        id: names
+        shell: bash
+        run: |
+          SAFE=$(echo "${{ matrix.image }}" | tr '/: ' '__-')
+          echo "SAFE=$SAFE" >> "$GITHUB_ENV"
+          echo "json_file=trivy-${SAFE}.json" >> "$GITHUB_OUTPUT"
+          echo "table_file=trivy-${SAFE}.txt" >> "$GITHUB_OUTPUT"
+
       - name: Trivy scan (JSON)
         uses: aquasecurity/trivy-action@0.35.0
         env:
@@ -100,46 +124,49 @@ jobs:
         with:
           image-ref: ${{ matrix.image }}
           format: json
-          output: trivy.json
+          output: ${{ steps.names.outputs.json_file }}
           vuln-type: os,library
           timeout: 10m
           ignore-unfixed: false
           exit-code: 0
 
       - name: Convert Trivy output to table
-        uses: aquasecurity/trivy-action@0.35.0
-        env:
-          TRIVY_FORMAT: table
-        with:
-          scan-type: convert
-          scan-ref: trivy.json
-          format: table
-          output: trivy.txt
-
-      - name: Summarize severities
-        id: sev
+        shell: bash
         run: |
-          SAFE=$(echo "${{ matrix.image }}" | tr '/: ' '__-')
-          echo "SAFE=$SAFE" >> "$GITHUB_ENV"
+          trivy convert \
+            --format table \
+            --output "${{ steps.names.outputs.table_file }}" \
+            "${{ steps.names.outputs.json_file }}"
+
+          if [ ! -s "${{ steps.names.outputs.table_file }}" ]; then
+            {
+              echo "Trivy scan report for: ${{ matrix.image }}"
+              echo
+              echo "No vulnerabilities detected."
+            } > "${{ steps.names.outputs.table_file }}"
+          fi
 
       - name: Upload per-image JSON
         uses: actions/upload-artifact@v7
         with:
           name: trivy-json-${{ env.SAFE }}
-          path: trivy.json
+          path: ${{ steps.names.outputs.json_file }}
           retention-days: 30
 
       - name: Upload per-image table
         uses: actions/upload-artifact@v7
         with:
           name: trivy-table-${{ env.SAFE }}
-          path: trivy.txt
+          path: ${{ steps.names.outputs.table_file }}
           retention-days: 30
 
   comment:
     needs: [discover-images, trivy]
     runs-on: ubuntu-latest
-    if: success() && needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != ''
+    if: >
+      success() &&
+      needs.discover-images.outputs.images != '[]' &&
+      needs.discover-images.outputs.images != ''
     steps:
       - uses: actions/checkout@v6
 
@@ -153,19 +180,19 @@ jobs:
         with:
           path: trivy-json
           pattern: trivy-json-*
-          merge-multiple: true
 
       - name: Build PR comment
         id: build
+        shell: bash
         run: |
-          echo "## 🔍 Trivy Vulnerability Scan Summary (Dependabot → main)" > comment.md
+          echo "## 🔍 Trivy Vulnerability Scan Summary" > comment.md
           echo "" >> comment.md
-          echo "Images scanned:" >> comment.md
+          echo "### Images scanned:" >> comment.md
           echo '```' >> comment.md
           printf '%s' '${{ needs.discover-images.outputs.images }}' | jq -r '.[]' >> comment.md
           echo '```' >> comment.md
           echo "" >> comment.md
-          echo "### Per-image vulnerabilities" >> comment.md
+          echo "### Per-image vulnerabilities:" >> comment.md
           echo "" >> comment.md
 
           FOUND_JSON=0
@@ -185,7 +212,7 @@ jobs:
               echo "---"
               echo ""
             } >> comment.md
-          done < <(find trivy-json -type f -name 'trivy.json' -print0)
+          done < <(find trivy-json -type f -name '*.json' -print0)
 
           if [ "$FOUND_JSON" -eq 0 ]; then
             echo "_No Trivy JSON artifacts found to summarize._" >> comment.md
@@ -194,9 +221,7 @@ jobs:
 
           if [ "$FOUND_JSON" -eq 1 ]; then
             echo "### 📄 Full Reports" >> comment.md
-            echo "The complete Trivy JSON reports are uploaded as artifacts (one per image)." >> comment.md
-            echo "" >> comment.md
-            echo "Artifacts (tables + JSON):" >> comment.md
+            echo "All per-image Trivy artifacts ->" >> comment.md
             echo "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> comment.md
             echo "" >> comment.md
           fi
