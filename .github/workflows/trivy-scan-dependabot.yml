@@ -187,27 +187,35 @@ jobs:
         run: |
           echo "## 🔍 Trivy Vulnerability Scan Summary" > comment.md
           echo "" >> comment.md
-          echo "### Images scanned:" >> comment.md
+          echo "### Images scanned" >> comment.md
           echo '```' >> comment.md
           printf '%s' '${{ needs.discover-images.outputs.images }}' | jq -r '.[]' >> comment.md
           echo '```' >> comment.md
           echo "" >> comment.md
-          echo "### Per-image vulnerabilities:" >> comment.md
+          echo "### Per-image vulnerabilities" >> comment.md
           echo "" >> comment.md
 
           FOUND_JSON=0
           while IFS= read -r -d '' f; do
             FOUND_JSON=1
             IMG=$(jq -r '.ArtifactName // "unknown"' "$f")
-            HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$f")
-            CRIT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$f")
+
             {
               echo "Image: \`$IMG\`"
               echo ""
               echo "| Severity | Count |"
               echo "|----------|-------|"
-              echo "| HIGH     | ${HIGH} |"
-              echo "| CRITICAL | ${CRIT} |"
+              jq -r '
+                [
+                  {sev:"CRITICAL", count: [.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length},
+                  {sev:"HIGH",     count: [.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")]     | length},
+                  {sev:"MEDIUM",   count: [.Results[].Vulnerabilities[]? | select(.Severity=="MEDIUM")]   | length},
+                  {sev:"LOW",      count: [.Results[].Vulnerabilities[]? | select(.Severity=="LOW")]      | length},
+                  {sev:"UNKNOWN",  count: [.Results[].Vulnerabilities[]? | select(.Severity=="UNKNOWN")]  | length}
+                ]
+                | .[]
+                | "| \(.sev) | \(.count) |"
+              ' "$f"
               echo ""
               echo "---"
               echo ""
