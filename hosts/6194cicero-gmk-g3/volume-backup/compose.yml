@@ -74,6 +74,7 @@ services:
       - ALLOW_UNPAUSE=0
       - CONTAINERS=1
       - INFO=1
+      - LOG_LEVEL=notice
       - PING=1
       - SOCKET_PATH=/var/run/docker.sock
       - TZ=${TZ}
