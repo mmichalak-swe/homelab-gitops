@@ -98,7 +98,7 @@ services:
       - EXEC=0
       - IMAGES=1
       - INFO=1
-      - LOG_LEVEL=info
+      - LOG_LEVEL=notice
       - NETWORKS=0
       - NODES=0
       - PING=1
