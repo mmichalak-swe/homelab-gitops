@@ -61,6 +61,9 @@ services:
     volumes:
       - speedtest_data:/backup/speedtest:ro
       - /tmp/docker-volume-backup-speedtest:/archive
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
 
   volume-backup-socket-proxy:
     cap_drop:
