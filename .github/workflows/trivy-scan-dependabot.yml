@@ -106,7 +106,7 @@ jobs:
           version: '1.7.1'
 
       - name: Install Trivy CLI
-        uses: aquasecurity/setup-trivy@v0.2.5
+        uses: aquasecurity/setup-trivy@v0.2.6
 
       - name: Prepare per-image filenames
         id: names
