@@ -32,7 +32,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: pairdrop
-    image: linuxserver/pairdrop:v1.11.2-ls133
+    image: linuxserver/pairdrop:v1.11.2-ls134
     labels:
       - 'wud.display.icon=sh:pairdrop'
       - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
