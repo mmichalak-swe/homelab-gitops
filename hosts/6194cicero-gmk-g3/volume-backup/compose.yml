@@ -91,7 +91,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: volume-backup-socket-proxy
-    image: linuxserver/socket-proxy:3.2.14-r0-ls74
+    image: linuxserver/socket-proxy:3.2.15-r0-ls75
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
       - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
