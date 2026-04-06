@@ -39,7 +39,7 @@ services:
     expose:
       - 80
     hostname: pihole-rpi4
-    image: pihole/pihole:2026.02.0
+    image: pihole/pihole:2026.04.0@sha256:d74b8afb6fe5b59ad405e7f62260a97a9b43d442e629035a6b1eea94ac24ace5
     labels:
       - 'wud.display.icon=sh:pi-hole'
       - 'wud.tag.include=^\d+(?:\.\d{1,2})?\.\d+$$'

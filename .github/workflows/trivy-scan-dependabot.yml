@@ -198,7 +198,12 @@ jobs:
           FOUND_JSON=0
           while IFS= read -r -d '' f; do
             FOUND_JSON=1
-            IMG=$(jq -r '.ArtifactName // "unknown"' "$f")
+            # Extract image name from filename instead of JSON
+            FILENAME=$(basename "$f" .json)
+            IMG="${FILENAME#trivy-}"
+            IMG="${IMG//__-/ /}"
+            IMG="${IMG//__/: }"
+            IMG="${IMG//-/ }"
 
             {
               echo "Image: \`$IMG\`"
@@ -207,11 +212,11 @@ jobs:
               echo "|----------|-------|"
               jq -r '
                 [
-                  {sev:"CRITICAL", count: [.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length},
-                  {sev:"HIGH",     count: [.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")]     | length},
-                  {sev:"MEDIUM",   count: [.Results[].Vulnerabilities[]? | select(.Severity=="MEDIUM")]   | length},
-                  {sev:"LOW",      count: [.Results[].Vulnerabilities[]? | select(.Severity=="LOW")]      | length},
-                  {sev:"UNKNOWN",  count: [.Results[].Vulnerabilities[]? | select(.Severity=="UNKNOWN")]  | length}
+                  {sev:"CRITICAL", count: [.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length},
+                  {sev:"HIGH",     count: [.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")]     | length},
+                  {sev:"MEDIUM",   count: [.Results[]?.Vulnerabilities[]? | select(.Severity=="MEDIUM")]   | length},
+                  {sev:"LOW",      count: [.Results[]?.Vulnerabilities[]? | select(.Severity=="LOW")]      | length},
+                  {sev:"UNKNOWN",  count: [.Results[]?.Vulnerabilities[]? | select(.Severity=="UNKNOWN")]  | length}
                 ]
                 | .[]
                 | "| \(.sev) | \(.count) |"
