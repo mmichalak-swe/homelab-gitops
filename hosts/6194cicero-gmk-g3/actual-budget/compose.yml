@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 20s
     hostname: actual-server
-    image: actualbudget/actual-server:26.3.0-alpine
+    image: actualbudget/actual-server:26.4.0-alpine@sha256:7d1e5d83bd6dd85737cb8c29ceb79ce93f0d116de2065771263f66d4a648d02f
     labels:
       - 'wud.display.icon=sh:actual-budget'
       - 'wud.tag.include=^\d+\.\d+\.\d+-alpine$$'
