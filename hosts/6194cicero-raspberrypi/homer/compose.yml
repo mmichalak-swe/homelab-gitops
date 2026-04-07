@@ -18,7 +18,7 @@ services:
     expose:
       - 8080
     hostname: homer
-    image: b4bz/homer:v26.4.1@sha256:7d2f42375087e8993f05fdb745ad9c621609c598e421ab8b2ea9919018dc7072
+    image: b4bz/homer:v26.4.1@sha256:659b488ebc52be44ca050b9a990e44c152d99eaa6af0225809168a57f09b67a8
     labels:
       - 'wud.display.icon=sh:homer'
       - 'wud.tag.include=^v?\d+(?:\.\d{1,2})?\.\d+$$'
