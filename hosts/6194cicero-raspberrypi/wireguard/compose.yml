@@ -43,7 +43,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: wireguard-ls
-    image: linuxserver/wireguard:1.0.20250521-r1-ls106
+    image: linuxserver/wireguard:1.0.20250521-r1-ls108@sha256:f85af86cac70a091523947a7208f77002ce14f14555797779497745e65dedd6f
     labels:
       - 'wud.display.icon=sh:wireguard'
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d{3,}$$'
