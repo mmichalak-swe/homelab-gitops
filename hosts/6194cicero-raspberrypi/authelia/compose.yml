@@ -23,7 +23,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: authelia
-    image: authelia/authelia:4.39.18
+    image: authelia/authelia:4.39.18@sha256:ac379ba7680cea6ea21a29b65bf6daabb5aec5b4412c5591ec71df4fd156c789
     labels:
       - 'wud.display.icon=sh:authelia'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
