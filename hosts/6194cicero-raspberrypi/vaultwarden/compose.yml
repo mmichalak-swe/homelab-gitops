@@ -18,7 +18,7 @@ services:
     expose:
       - 80
     hostname: vaultwarden
-    image: vaultwarden/server:1.35.4-alpine
+    image: vaultwarden/server:1.35.7-alpine
     labels:
       - 'wud.display.icon=sh:vaultwarden'
       - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
