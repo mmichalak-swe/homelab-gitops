@@ -81,7 +81,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: monitoring-grafana
-    image: grafana/grafana:12.4.2
+    image: grafana/grafana:13.0.0
     labels:
       - 'wud.display.icon=sh:grafana'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
