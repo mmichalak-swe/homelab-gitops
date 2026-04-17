@@ -1,9 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": ["config:recommended", "docker:enableMajor"],
   "timezone": "America/New_York",
   "dependencyDashboard": true,
   "updateNotScheduled": false,
+  "ignorePaths": ["hosts/**/caddy/**"],
   "includePaths": [
     ".github/**",
     "hosts/*/*/compose.yml",
@@ -23,12 +24,6 @@
       "matchFileNames": ["hosts/*/*/compose.yml", "hosts/*/*/compose.yaml"],
       "schedule": ["* 0-4 * * 1-5"],
       "addLabels": ["docker_compose"]
-    },
-    {
-      "description": "Ignore caddy-prefixed Docker Compose images",
-      "matchManagers": ["docker-compose"],
-      "matchPackageNames": ["caddy-*"],
-      "enabled": false
     },
     {
       "description": "Approximate Dependabot's weekly Dockerfile checks on Mondays before 05:00 ET",
