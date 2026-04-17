@@ -1,4 +1,4 @@
-name: Notify Discord on Dependabot PR
+name: Notify Discord on Dependency Bot PR
 
 on:
   pull_request:
@@ -13,7 +13,9 @@ permissions:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' ||
+      github.event.pull_request.user.login == 'renovate[bot]'
     steps:
       - name: Send message to Discord
         uses: sarisia/actions-status-discord@v1

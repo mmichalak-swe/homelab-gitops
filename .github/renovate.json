@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "America/New_York",
+  "dependencyDashboard": true,
+  "updateNotScheduled": false,
+  "includePaths": [
+    ".github/**",
+    "hosts/*/*/compose.yml",
+    "hosts/*/*/compose.yaml",
+    "Dockerfiles/*/Dockerfile"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Approximate Dependabot's weekly GitHub Actions checks on Thursdays before 05:00 ET",
+      "matchManagers": ["github-actions"],
+      "schedule": ["* 0-4 * * 4"]
+    },
+    {
+      "description": "Approximate Dependabot's weekday Docker Compose checks before 05:00 ET",
+      "matchManagers": ["docker-compose"],
+      "matchFileNames": ["hosts/*/*/compose.yml", "hosts/*/*/compose.yaml"],
+      "schedule": ["* 0-4 * * 1-5"],
+      "addLabels": ["docker_compose"]
+    },
+    {
+      "description": "Ignore caddy-prefixed Docker Compose images",
+      "matchManagers": ["docker-compose"],
+      "matchPackageNames": ["caddy-*"],
+      "enabled": false
+    },
+    {
+      "description": "Approximate Dependabot's weekly Dockerfile checks on Mondays before 05:00 ET",
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["Dockerfiles/*/Dockerfile"],
+      "schedule": ["* 0-4 * * 1"],
+      "addLabels": ["docker"]
+    }
+  ]
+}

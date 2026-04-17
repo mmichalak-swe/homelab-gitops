@@ -12,6 +12,10 @@ jobs:
   discover-images:
     runs-on: ubuntu-latest
     if: >
+      (
+        github.event.pull_request.user.login == 'dependabot[bot]' ||
+        github.event.pull_request.user.login == 'renovate[bot]'
+      ) &&
       github.event.pull_request.base.ref == 'main' &&
       contains(github.event.pull_request.labels.*.name, 'dependencies') &&
       (
