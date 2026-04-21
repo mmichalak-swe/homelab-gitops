@@ -36,7 +36,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer
-    image: portainer/portainer-ce:2.40.0-alpine
+    image: portainer/portainer-ce:2.40.0-alpine@sha256:bb1730d6411adc64328825897220e7711ad97f73e3c3638f8f2d71e9d2ddb2e7
     labels:
       - 'wud.display.icon=sh:portainer'
       - 'wud.tag.include=^\d+\.\d+\.\d+-alpine$$'

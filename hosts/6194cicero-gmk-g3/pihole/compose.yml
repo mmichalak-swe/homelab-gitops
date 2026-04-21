@@ -76,7 +76,7 @@ services:
       retries: 3
       start_period: 30s
     hostname: unbound
-    image: klutchell/unbound:1.24.2
+    image: klutchell/unbound:1.24.2@sha256:cb9a0f06c803c764395e2ff50bd8a244470601290c78fb2cdcf1bd200a027cd6
     labels:
       - 'wud.display.icon=sh:unbound'
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'

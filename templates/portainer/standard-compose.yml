@@ -27,7 +27,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: <service_name>
-    image: <image-name>:<tag>
+    image: <image-name>:<tag>@sha256:<digest>
     labels:
       - 'wud.display.icon=sh:<project-name>'
       - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
