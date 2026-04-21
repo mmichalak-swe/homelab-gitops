@@ -97,7 +97,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer-socket-proxy
-    image: linuxserver/socket-proxy:3.2.15-r0-ls76@sha256:a5a143133df569b6103bd555c18b3355d0def538272ab3c65936cc93ebe44368
+    image: linuxserver/socket-proxy:3.2.15@sha256:2a37bf384164425fc7019fb5a27e125afc047a1763b2961eea9338c60e1e14f6
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
       - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
