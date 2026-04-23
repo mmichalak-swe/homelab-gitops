@@ -122,7 +122,7 @@ jobs:
           echo "table_file=trivy-${SAFE}.txt" >> "$GITHUB_OUTPUT"
 
       - name: Trivy scan (JSON)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         env:
           TRIVY_CACHE_DIR: ~/.cache/trivy
         with:
