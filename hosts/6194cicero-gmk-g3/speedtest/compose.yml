@@ -37,7 +37,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: speedtest
-    image: linuxserver/speedtest-tracker:1.14.0@sha256:7a152e8f5bb6a84a3c31fa2ac41bcbab3531eda4e6271435c8278cc565c66e42
+    image: linuxserver/speedtest-tracker:1.14.1@sha256:a2f4b798445ad702df27b028f190cd7247627d1d3c6cb473f684e2738658021f
     labels:
       - 'wud.display.icon=sh:speedtest-tracker'
       - 'wud.tag.include=^v\d+\.\d+\.\d+.*$$'
