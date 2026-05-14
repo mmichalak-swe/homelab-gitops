@@ -1,6 +1,6 @@
-FROM caddy:2.11.2-builder-alpine AS builder
+FROM caddy:2.11.3-builder-alpine@sha256:7d2315853f99b425d0daa6bcad826e8b0d65b4af1f70fcaeb6b152157d81771d AS builder
 RUN xcaddy build --with github.com/caddy-dns/porkbun
 
-FROM caddy:2.11.2-alpine
+FROM caddy:2.11.3-alpine@sha256:bb56e6200ec26a67f04be90255993dc390c9815967f67f24b4ca6466e88de64b
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-RUN apk add curl
+RUN apk add --no-cache curl
