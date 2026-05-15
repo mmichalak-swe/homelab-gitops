@@ -123,7 +123,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: wud-socket-proxy
-    image: linuxserver/socket-proxy:3.2.18@sha256:8d4ba67fd377b6ce9252bdb47ff1de7f28f17c52b0fb801e797bbafcc1bfe5bc
+    image: linuxserver/socket-proxy:3.2.19@sha256:a1740f01925d07c4ed6e73ea21ec798cff28e0a811b3c1672617b95eee76d79c
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
       - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
