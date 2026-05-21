@@ -40,10 +40,6 @@ services:
       - 80
     hostname: pihole-rpi4
     image: pihole/pihole:2026.05.0@sha256:70a9c11171ded2eee735d88c127996da209284a329d50f5ae59c06b861d401b3
-    labels:
-      - 'wud.display.icon=sh:pi-hole'
-      - 'wud.tag.include=^\d+(?:\.\d{1,2})?\.\d+$$'
-      - 'wud.link.template=https://github.com/pi-hole/docker-pi-hole/releases/tag/$${raw}'
     networks:
       caddy-net:
         ipv4_address: 172.18.0.2
@@ -80,10 +76,6 @@ services:
       start_period: 30s
     hostname: unbound
     image: klutchell/unbound:1.25.1@sha256:4718d579152d49a3eaf7cbc1ce67f4e2e0d6f396be8f604a2416a94e7a250be8
-    labels:
-      - 'wud.display.icon=sh:unbound'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/klutchell/unbound-docker/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       caddy-net:
         ipv4_address: 172.18.0.3

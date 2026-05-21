@@ -23,10 +23,6 @@ services:
       start_period: 20s
     hostname: actual-server
     image: actualbudget/actual-server:26.5.2-alpine@sha256:12082ca89dbc5e93b6f806074c19282d97ff04579c784bcdfbe996ce5c52bd0d
-    labels:
-      - 'wud.display.icon=sh:actual-budget'
-      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine$$'
-      - 'wud.link.template=https://github.com/actualbudget/actual/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       caddy-net:
         ipv4_address: 172.19.0.23
