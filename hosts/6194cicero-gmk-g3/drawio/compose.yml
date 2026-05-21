@@ -23,10 +23,6 @@ services:
       start_period: 10s
     hostname: drawio
     image: jgraph/drawio:30.0.2@sha256:b87c521e53760fa33916182d96bc35989384b03b1b40d9a493bbdc3677a66b51
-    labels:
-      - 'wud.display.icon=sh:draw-io'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/jgraph/drawio/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       caddy-net:
         ipv4_address: 172.19.0.22
