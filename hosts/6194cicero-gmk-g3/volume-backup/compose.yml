@@ -42,10 +42,6 @@ services:
     #   start_period: 10s
     hostname: volume-backup
     image: offen/docker-volume-backup:v2.48.0@sha256:8eaf987d83e7b5f7c4edd8d177c2ca74b49a0d015d241e99a260c19a043b46aa
-    labels:
-      - 'wud.display.icon=sh:docker-volume-backup'
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/offen/docker-volume-backup/releases/tag/$${raw}'
     networks:
       caddy-net:
         ipv4_address: 172.19.0.10
@@ -89,9 +85,6 @@ services:
       start_period: 10s
     hostname: volume-backup-socket-proxy
     image: linuxserver/socket-proxy:3.2.19@sha256:a1740f01925d07c4ed6e73ea21ec798cff28e0a811b3c1672617b95eee76d79c
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
-      - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
     networks:
       proxy-net:
     read_only: true
