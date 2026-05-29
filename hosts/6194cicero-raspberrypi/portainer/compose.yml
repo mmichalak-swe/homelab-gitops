@@ -36,11 +36,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer
-    image: portainer/portainer-ce:2.40.0-alpine
-    labels:
-      - 'wud.display.icon=sh:portainer'
-      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine$$'
-      - 'wud.link.template=https://github.com/portainer/portainer/releases/tag/$${major}.$${minor}.$${patch}'
+    image: portainer/portainer-ce:2.42.0-alpine@sha256:b2e2535d84d42f1b0e0e8a7c74456e558e8d2c3782dc367be42fae47a992003b
     networks:
       caddy-net:
         ipv4_address: 172.18.0.20
@@ -97,10 +93,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer-socket-proxy
-    image: linuxserver/socket-proxy:3.2.15-r0-ls75
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+\-r\d\-ls\d+$$'
-      - 'wud.link.template=https://github.com/linuxserver/docker-socket-proxy/releases/tag/$${raw}'
+    image: linuxserver/socket-proxy:3.2.19@sha256:a1740f01925d07c4ed6e73ea21ec798cff28e0a811b3c1672617b95eee76d79c
     networks:
       proxy-net:
     read_only: true

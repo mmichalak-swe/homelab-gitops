@@ -23,11 +23,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: authelia
-    image: authelia/authelia:4.39.16
-    labels:
-      - 'wud.display.icon=sh:authelia'
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - 'wud.link.template=https://github.com/authelia/authelia/releases/tag/v$${major}.$${minor}.$${patch}'
+    image: authelia/authelia:4.39.20@sha256:1b363e9279e742397966333f364e0876ae02bf5c876de73e83af6d48c57ff51b
     mem_limit: 512m
     networks:
       caddy-net:
