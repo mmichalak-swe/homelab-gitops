@@ -2,12 +2,6 @@
 
 This Terraform root manages existing Portainer objects while leaving the Portainer stack itself as bootstrap infrastructure.
 
-The initial test import is the Draw.io stack on `6194cicero-gmk-g3`, backed by:
-
-```text
-hosts/6194cicero-gmk-g3/drawio/compose.yml
-```
-
 ## Layout
 
 Stack behavior is shared in `stacks.tf`. Host-specific stack inventory lives in one file per host:
@@ -87,7 +81,7 @@ terraform import 'portainer_registry.dockerhub["dockerhub_personal"]' <REGISTRY_
 terraform import 'portainer_registry.dockerhub["dockerhub_dhi"]' <REGISTRY_ID>
 ```
 
-## Import Draw.io
+## Import existing stacks
 
 Initialize the provider:
 
@@ -95,101 +89,19 @@ Initialize the provider:
 terraform init
 ```
 
-Find the existing Draw.io stack ID and endpoint ID in Portainer, then import it.
+Find the existing stack ID and endpoint ID in Portainer, then import it.
 The Portainer provider expects this import ID format:
 
 ```text
 <endpoint_id>-<stack_id>-<deployment_type>[-<method>]
 ```
 
+### Example - Draw.io
+
 For Draw.io on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `52`, standalone deployment, and Git repository mode:
 
 ```shell
 terraform import 'module.stack["6194cicero-gmk-g3/drawio"].portainer_stack.this' '5-52-standalone-repository'
-```
-
-For Actual Budget on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `88`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/actual-budget"].portainer_stack.this' '5-88-standalone-repository'
-```
-
-For Caddy on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `57`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/caddy"].portainer_stack.this' '5-57-standalone-repository'
-```
-
-For Nebula Sync on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `58`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/nebula-sync"].portainer_stack.this' '5-58-standalone-repository'
-```
-
-For Pairdrop on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `50`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/pairdrop"].portainer_stack.this' '5-50-standalone-repository'
-```
-
-For Pi-hole on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `60`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/pihole"].portainer_stack.this' '5-60-standalone-repository'
-```
-
-For Speedtest on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `59`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/speedtest"].portainer_stack.this' '5-59-standalone-repository'
-```
-
-For Volume Backup on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `92`, standalone deployment, Git repository mode, and feature branch `refs/heads/add-docker-volume-backup-test-tzdata`:
-
-```shell
-terraform import 'module.stack["6194cicero-gmk-g3/volume-backup"].portainer_stack.this' '5-92-standalone-repository'
-```
-
-For Vaultwarden on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `71`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/vaultwarden"].portainer_stack.this' '22-71-standalone-repository'
-```
-
-For Authelia on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `72`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/authelia"].portainer_stack.this' '22-72-standalone-repository'
-```
-
-For Homer on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `73`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/homer"].portainer_stack.this' '22-73-standalone-repository'
-```
-
-For Caddy on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `74`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/caddy"].portainer_stack.this' '22-74-standalone-repository'
-```
-
-For WireGuard LS on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `84`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/wireguard-ls"].portainer_stack.this' '22-84-standalone-repository'
-```
-
-For Monitoring on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `86`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/monitoring"].portainer_stack.this' '22-86-standalone-repository'
-```
-
-For Pi-hole on `6194cicero-raspberrypi`, using endpoint ID `22`, stack ID `90`, standalone deployment, and Git repository mode:
-
-```shell
-terraform import 'module.stack["6194cicero-raspberrypi/pihole"].portainer_stack.this' '22-90-standalone-repository'
 ```
 
 Check drift before applying:
