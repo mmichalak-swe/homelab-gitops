@@ -28,7 +28,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: caddy
-    image: caddy:2.11.3-alpine-custom-porkbun
+    image: caddy:2.11.4-alpine-custom-porkbun
     networks:
       caddy-net:
         ipv4_address: 172.19.0.5
