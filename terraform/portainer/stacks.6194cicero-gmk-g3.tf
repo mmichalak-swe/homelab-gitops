@@ -12,7 +12,6 @@ locals {
       host                    = "6194cicero-gmk-g3"
       file_path_in_repository = "hosts/6194cicero-gmk-g3/caddy/compose.yml"
       env                     = try(var.stack_env["6194cicero-gmk-g3/caddy"], {})
-      repository_reference_name = lookup(var.stack_repository_reference_names, "6194cicero-gmk-g3/caddy", var.repository_reference_name)
     }
 
     "6194cicero-gmk-g3/drawio" = {
