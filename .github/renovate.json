@@ -37,11 +37,6 @@
       "addLabels": ["docker"]
     },
     {
-      "description": "Resolve Terraform providers from the OpenTofu registry",
-      "matchDatasources": ["terraform-provider"],
-      "registryUrls": ["https://registry.opentofu.org"]
-    },
-    {
       "description": "Update Terraform dependencies weekly before 05:00 ET on Monday",
       "matchManagers": ["terraform"],
       "matchFileNames": [
