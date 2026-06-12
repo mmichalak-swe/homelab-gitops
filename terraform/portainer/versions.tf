@@ -3,7 +3,7 @@ terraform {
 
   required_providers {
     portainer = {
-      source  = "portainer/portainer"
+      source  = "registry.opentofu.org/portainer/portainer"
       version = "1.31.1"
     }
   }
