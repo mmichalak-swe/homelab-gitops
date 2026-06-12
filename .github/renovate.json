@@ -4,33 +4,51 @@
   "timezone": "America/New_York",
   "dependencyDashboard": true,
   "updateNotScheduled": false,
+  "lockFileMaintenance": {
+    "enabled": true
+  },
   "ignorePaths": ["hosts/**/caddy/**"],
   "includePaths": [
     ".github/**",
     "hosts/*/*/compose.yml",
     "hosts/*/*/compose.yaml",
-    "Dockerfiles/*/Dockerfile"
+    "Dockerfiles/*/Dockerfile",
+    "terraform/*/versions.tf"
   ],
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "description": "Approximate Dependabot's weekly GitHub Actions checks on Thursdays before 05:00 ET",
+      "description": "Update GitHub Actions weekly before 05:00 ET on Monday",
       "matchManagers": ["github-actions"],
-      "schedule": ["* 0-4 * * 4"]
+      "schedule": ["* 0-4 * * 1"]
     },
     {
-      "description": "Approximate Dependabot's weekday Docker Compose checks before 05:00 ET",
+      "description": "Update Docker Compose files on weekdays before 05:00 ET",
       "matchManagers": ["docker-compose"],
       "matchFileNames": ["hosts/*/*/compose.yml", "hosts/*/*/compose.yaml"],
       "schedule": ["* 0-4 * * 1-5"],
       "addLabels": ["docker_compose"]
     },
     {
-      "description": "Approximate Dependabot's weekly Dockerfile checks on Mondays before 05:00 ET",
+      "description": "Update Dockerfiles weekly before 05:00 ET on Monday",
       "matchManagers": ["dockerfile"],
       "matchFileNames": ["Dockerfiles/*/Dockerfile"],
       "schedule": ["* 0-4 * * 1"],
       "addLabels": ["docker"]
+    },
+    {
+      "description": "Resolve Terraform providers from the OpenTofu registry",
+      "matchDatasources": ["terraform-provider"],
+      "registryUrls": ["https://registry.opentofu.org"]
+    },
+    {
+      "description": "Update Terraform dependencies weekly before 05:00 ET on Monday",
+      "matchManagers": ["terraform"],
+      "matchFileNames": [
+        "terraform/*/versions.tf"
+      ],
+      "schedule": ["* 0-4 * * 1"],
+      "addLabels": ["terraform"]
     }
   ]
 }
