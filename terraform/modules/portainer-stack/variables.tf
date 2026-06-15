@@ -62,6 +62,7 @@ variable "env" {
   description = "Stack environment variables configured in Portainer."
   type        = map(string)
   default     = {}
+  sensitive   = true
 }
 
 variable "force_update" {
@@ -128,4 +129,3 @@ variable "update_interval" {
   type        = string
   default     = "1h"
 }
-

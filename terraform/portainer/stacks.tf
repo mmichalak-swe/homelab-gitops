@@ -17,7 +17,11 @@ module "stack" {
   repository_reference_name = try(each.value.repository_reference_name, var.repository_reference_name)
   file_path_in_repository   = each.value.file_path_in_repository
 
-  env = each.value.env
+  env = merge(
+    try(each.value.env, {}),
+    try(var.stack_env[each.key], {}),
+    try(local.infisical_stack_env[each.key], {}),
+  )
 
   force_update                  = try(each.value.force_update, var.stack_defaults.force_update)
   git_repository_authentication = var.git_repository_authentication

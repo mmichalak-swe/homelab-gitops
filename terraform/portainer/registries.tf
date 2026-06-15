@@ -3,7 +3,7 @@ resource "portainer_registry" "dockerhub" {
 
   authentication = each.value.authentication
   name           = each.value.name
-  password       = var.dockerhub_registry_tokens[each.key]
+  password       = local.dockerhub_registry_tokens[each.key]
   type           = each.value.type
   url            = each.value.url
   username       = each.value.username

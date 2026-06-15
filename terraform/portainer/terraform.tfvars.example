@@ -1,10 +1,33 @@
-portainer_endpoint = "https://portainer.example.com"
-
-# Prefer PORTAINER_API_KEY in your shell or a local, ignored *.auto.tfvars file.
-# portainer_api_key = "ptr_..."
-
-repository_url            = "https://github.com/your-user/homelab-gitops.git"
+repository_url            = "https://github.com/user/project.git"
 repository_reference_name = "refs/heads/main"
+
+infisical_project_id                         = "your-infisical-project-id"
+infisical_env_slug                           = "prod"
+infisical_portainer_config_enabled           = true
+infisical_stack_env_enabled                  = true
+infisical_dockerhub_registry_tokens_enabled  = true
+
+# Leave unset for Infisical Cloud. Set only for self-hosted Infisical.
+# infisical_host = "https://infisical.example.com"
+
+# Keep Infisical auth in a local, ignored *.auto.tfvars file for local runs.
+# infisical_auth = {
+#   universal = {
+#     client_id     = "..."
+#     client_secret = "..."
+#   }
+# }
+
+# Optional local-only fallback when infisical_portainer_config_enabled is false.
+# portainer_endpoint = "https://portainer.example.com"
+# portainer_api_key  = "ptr_..."
+
+# Optional: test one stack against dev secrets while the rest use infisical_env_slug.
+# infisical_stack_env_overrides = {
+#   "6194cicero-gmk-g3/speedtest" = {
+#     env_slug = "dev"
+#   }
+# }
 
 stack_repository_reference_names = {
   "6194cicero-gmk-g3/volume-backup" = "refs/heads/add-docker-volume-backup-test-tzdata"
@@ -28,10 +51,11 @@ dockerhub_registries = {
   }
 }
 
-dockerhub_registry_tokens = {
-  dockerhub_personal = ""
-  dockerhub_dhi      = ""
-}
+# Optional local fallback when infisical_dockerhub_registry_tokens_enabled is false.
+# dockerhub_registry_tokens = {
+#   dockerhub_personal = "dckr_pat_..."
+#   dockerhub_dhi      = "dckr_pat_..."
+# }
 
 portainer_environment_names = {
   "6194cicero-gmk-g3"      = "6194cicero-gmk-g3"
@@ -42,6 +66,8 @@ portainer_environment_names = {
 # git_repository_authentication = true
 # repository_git_credential_id  = 1
 
+# Optional local fallback values. When infisical_stack_env_enabled is true,
+# Infisical secrets from /hosts/<host>/<app> override this map.
 stack_env = {
   "6194cicero-gmk-g3/volume-backup" = {
     TZ = "America/New_York"
