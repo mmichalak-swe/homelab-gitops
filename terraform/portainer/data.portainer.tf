@@ -3,4 +3,3 @@ data "portainer_environment" "host" {
 
   name = each.value
 }
-

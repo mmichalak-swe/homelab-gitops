@@ -24,12 +24,11 @@ resource "portainer_stack" "this" {
   update_interval               = var.update_interval
 
   dynamic "env" {
-    for_each = var.env
+    for_each = nonsensitive(toset(keys(var.env)))
 
     content {
-      name  = env.key
-      value = env.value
+      name  = env.value
+      value = var.env[env.value]
     }
   }
 }
-

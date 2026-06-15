@@ -1,8 +1,7 @@
 terraform {
   required_providers {
     portainer = {
-      source = "portainer/portainer"
+      source = "registry.opentofu.org/portainer/portainer"
     }
   }
 }
-
