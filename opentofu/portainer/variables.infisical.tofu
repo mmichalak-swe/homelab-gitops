@@ -61,7 +61,7 @@ variable "infisical_portainer_config_env_slug" {
 variable "infisical_portainer_config_path" {
   description = "Infisical folder path for Portainer provider settings."
   type        = string
-  default     = "/terraform/portainer"
+  default     = "/opentofu/portainer"
 }
 
 variable "infisical_dockerhub_registry_tokens_enabled" {
@@ -79,7 +79,7 @@ variable "infisical_dockerhub_registry_tokens_env_slug" {
 variable "infisical_dockerhub_registry_tokens_path" {
   description = "Infisical folder path for Docker Hub registry tokens. Secret names must match dockerhub_registries keys."
   type        = string
-  default     = "/terraform/portainer/dockerhub-registry-tokens"
+  default     = "/opentofu/portainer/dockerhub-registry-tokens"
 }
 
 variable "infisical_stack_env_enabled" {

@@ -12,7 +12,13 @@
 **/override.tf.json
 **/*_override.tf
 **/*_override.tf.json
+**/override.tofu
+**/override.tofu.json
+**/*_override.tofu
+**/*_override.tofu.json
 .terraformrc
 terraform.rc
+.tofurc
+tofu.rc
 
 !**/*.tfvars.example
