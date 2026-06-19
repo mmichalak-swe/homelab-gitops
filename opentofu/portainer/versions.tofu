@@ -1,6 +1,10 @@
-terraform {
-  required_version = ">= 1.15.0"
+language {
+  compatible_with {
+    opentofu = ">= 1.12"
+  }
+}
 
+terraform {
   required_providers {
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"

@@ -13,7 +13,7 @@
     "hosts/*/*/compose.yml",
     "hosts/*/*/compose.yaml",
     "Dockerfiles/*/Dockerfile",
-    "terraform/*/versions.tf"
+    "opentofu/**/versions.tofu"
   ],
   "labels": ["dependencies"],
   "packageRules": [
@@ -37,13 +37,14 @@
       "addLabels": ["docker"]
     },
     {
-      "description": "Update Terraform dependencies weekly before 05:00 ET on Monday",
+      "description": "Update OpenTofu dependencies weekly before 05:00 ET on Monday",
       "matchManagers": ["terraform"],
       "matchFileNames": [
-        "terraform/*/versions.tf"
+        "opentofu/**/versions.tofu"
       ],
       "schedule": ["* 0-4 * * 1"],
-      "addLabels": ["terraform"]
+      "registryUrls": ["https://registry.opentofu.org"],
+      "addLabels": ["opentofu"]
     }
   ]
 }

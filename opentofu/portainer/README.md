@@ -1,33 +1,33 @@
-# Portainer Terraform
+# Portainer OpenTofu
 
-This Terraform root manages existing Portainer objects while leaving the Portainer stack itself as bootstrap infrastructure.
+This OpenTofu root manages existing Portainer objects while leaving the Portainer stack itself as bootstrap infrastructure.
 
 ## Layout
 
-This directory is one Terraform root. Files are split by concern for readability:
+This directory is one OpenTofu root. Files are split by concern for readability:
 
 ```text
-versions.tf
-providers.tf
+versions.tofu
+providers.tofu
 
-variables.infisical.tf
-variables.portainer.tf
-variables.registries.tf
-variables.stacks.tf
+variables.infisical.tofu
+variables.portainer.tofu
+variables.registries.tofu
+variables.stacks.tofu
 
-infisical.portainer.tf
-infisical.registries.tf
-infisical.stack-env.tf
+infisical.portainer.tofu
+infisical.registries.tofu
+infisical.stack-env.tofu
 
-data.portainer.tf
-registries.tf
-stacks.tf
-stacks.<host>.tf
-custom_templates.tf
-outputs.tf
+data.portainer.tofu
+registries.tofu
+stacks.tofu
+stacks.<host>.tofu
+custom_templates.tofu
+outputs.tofu
 ```
 
-To add another stack, add an entry to the matching host file. The shared module block in `stacks.tf` will pick it up through `local.stacks`.
+To add another stack, add an entry to the matching host file. The shared module block in `stacks.tofu` will pick it up through `local.stacks`.
 
 ## Configure
 
@@ -93,7 +93,7 @@ Portainer provider settings can be read from Infisical before the Portainer prov
 The default folder is:
 
 ```text
-/terraform/portainer
+/opentofu/portainer
 ```
 
 Supported secret names:
@@ -161,7 +161,7 @@ Tokens can be read from Infisical.
 The default token folder is:
 
 ```text
-/terraform/portainer/dockerhub-registry-tokens
+/opentofu/portainer/dockerhub-registry-tokens
 ```
 
 Secret names must match the `dockerhub_registries` map keys, for example:
@@ -179,7 +179,7 @@ infisical_dockerhub_registry_tokens_enabled = true
 
 `dockerhub_registry_tokens` remains available for local fallback values.
 When Infisical is enabled, Infisical values override matching keys from `dockerhub_registry_tokens`.
-Registry PATs are still stored in Terraform state and Portainer registry configuration, so protect the state backend.
+Registry PATs are still stored in OpenTofu state and Portainer registry configuration, so protect the state backend.
 
 Each registry entry must include Portainer's registry `type`; Docker Hub is `6`.
 The registry map key must exist either in Infisical or in `dockerhub_registry_tokens`.
@@ -238,4 +238,4 @@ Check drift before applying:
 tofu plan
 ```
 
-If the plan wants to change repository settings, Git credentials, webhook settings, polling interval, ownership, `pull_image`, or `prune`, adjust the Terraform inputs to match the existing Portainer stack before applying.
+If the plan wants to change repository settings, Git credentials, webhook settings, polling interval, ownership, `pull_image`, or `prune`, adjust the OpenTofu inputs to match the existing Portainer stack before applying.

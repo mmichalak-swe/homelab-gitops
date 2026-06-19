@@ -20,7 +20,7 @@ The goal is a lightweight GitOps workflow without Kubernetes: changes are review
 │   │   └── daemon.json              # Host Docker daemon config
 │   ├── 6194cicero-gmk-g3/
 │   └── 6194cicero-raspberrypi/
-├── terraform/
+├── opentofu/
 │   ├── portainer/                   # OpenTofu root for Portainer-managed objects
 │   └── modules/
 │       └── portainer-stack/         # Shared Portainer stack module
@@ -48,36 +48,36 @@ The Portainer OpenTofu root maps those compose files to Git-backed Portainer sta
 Host-specific stack inventory lives in:
 
 ```text
-terraform/portainer/stacks.<host>.tf
+opentofu/portainer/stacks.<host>.tofu
 ```
 
 Shared stack behavior lives in:
 
 ```text
-terraform/portainer/stacks.tf
-terraform/modules/portainer-stack/
+opentofu/portainer/stacks.tofu
+opentofu/modules/portainer-stack/
 ```
 
-## Terraform
+## OpenTofu
 
 ### Operations
 
 Detailed Portainer/OpenTofu setup and migration notes live in:
 
 ```text
-terraform/portainer/README.md
+opentofu/portainer/README.md
 ```
 
 Typical workflow:
 
 ```shell
-cd terraform/portainer
+cd opentofu/portainer
 tofu init
 tofu plan
 tofu apply
 ```
 
-Use `terraform/portainer/terraform.tfvars.example` as the starting point for local ignored configuration.
+Use `opentofu/portainer/terraform.tfvars.example` as the starting point for local ignored configuration.
 
 ### Secrets
 
@@ -86,8 +86,8 @@ Infisical stores secrets used by the Portainer OpenTofu root and by Portainer st
 Primary Infisical paths:
 
 ```text
-/terraform/portainer
-/terraform/portainer/dockerhub-registry-tokens
+/opentofu/portainer
+/opentofu/portainer/dockerhub-registry-tokens
 /hosts/<host>/<app>
 ```
 
