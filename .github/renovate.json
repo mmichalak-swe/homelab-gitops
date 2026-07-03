@@ -4,6 +4,8 @@
   "timezone": "America/New_York",
   "dependencyDashboard": true,
   "updateNotScheduled": false,
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 20,
   "lockFileMaintenance": {
     "enabled": true
   },
