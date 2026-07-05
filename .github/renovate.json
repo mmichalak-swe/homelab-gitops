@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended", 
+    "config:recommended",
     "docker:enableMajor"
   ],
   "timezone": "America/New_York",
@@ -17,13 +17,13 @@
     {
       "description": "Group updates cleanly within each standalone multi-stage Dockerfile",
       "matchManagers": ["dockerfile"],
-      "matchPaths": ["Dockerfiles/*/Dockerfile"],
+      "matchFileNames": ["Dockerfiles/*/Dockerfile"],
       "groupName": "docker-base-{{{parentDir}}}"
     },
     {
       "description": "Update Dockerfiles on weekdays before 06:00 ET",
       "matchManagers": ["dockerfile"],
-      "matchPaths": ["Dockerfiles/*/Dockerfile"],
+      "matchFileNames": ["Dockerfiles/*/Dockerfile"],
       "schedule": ["* 0-5 * * 1-5"],
       "addLabels": ["docker"]
     },
@@ -35,14 +35,14 @@
     {
       "description": "Update Docker Compose files on weekdays before 06:00 ET",
       "matchManagers": ["docker-compose"],
-      "matchPaths": ["hosts/*/*/compose.yml", "hosts/*/*/compose.yaml"],
+      "matchFileNames": ["hosts/*/*/compose.yml"],
       "schedule": ["* 0-5 * * 1-5"],
       "addLabels": ["docker_compose"]
     },
     {
       "description": "Update OpenTofu dependencies on weekdays before 06:00 ET",
       "matchManagers": ["terraform"],
-      "matchPaths": ["opentofu/**/versions.tofu"],
+      "matchFileNames": ["opentofu/**/versions.tofu"],
       "schedule": ["* 0-5 * * 1-5"],
       "registryUrls": ["https://registry.opentofu.org"],
       "addLabels": ["opentofu"]

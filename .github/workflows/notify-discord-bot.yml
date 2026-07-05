@@ -1,4 +1,4 @@
-name: Notify Discord on Dependency Bot PR
+name: Notify Discord on Bot PR
 
 on:
   pull_request:
