@@ -1,0 +1,359 @@
+name: Build Docker Images
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Dockerfiles/*/Dockerfile'
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfiles/*/Dockerfile'
+  workflow_dispatch:
+    inputs:
+      manual_directory:
+        description: 'Directory to build (e.g., Dockerfiles/caddy).'
+        required: true
+        type: string
+      manual_version:
+        description: 'Manual version override (e.g., 2.7.6). If left empty, extracts from Dockerfile.'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.directories.outputs.directories }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect Dockerfile directories
+        id: directories
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          declare -a DIRECTORIES=()
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MANUAL_DIRECTORY="${{ github.event.inputs.manual_directory }}"
+            if [ -z "$MANUAL_DIRECTORY" ]; then
+              echo "::error::manual_directory is required for manual runs."
+              exit 1
+            fi
+
+            if [[ ! "$MANUAL_DIRECTORY" =~ ^Dockerfiles/[^/]+$ ]]; then
+              echo "::error::manual_directory must match Dockerfiles/<name>."
+              exit 1
+            fi
+
+            DIRECTORIES=("$MANUAL_DIRECTORY")
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -E "^Dockerfiles/[^/]+/Dockerfile$" || true)
+            if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
+              echo "No Dockerfiles were modified. Exiting."
+              echo "directories=[]" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            for FILE in "${CHANGED_FILES[@]}"; do
+              if [ -f "$FILE" ]; then
+                DIRECTORIES+=("$(dirname "$FILE")")
+              else
+                echo "Skipping deleted Dockerfile: $FILE"
+              fi
+            done
+          else
+            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -E "^Dockerfiles/[^/]+/Dockerfile$" || true)
+            if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
+              echo "No Dockerfiles were modified. Exiting."
+              echo "directories=[]" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            for FILE in "${CHANGED_FILES[@]}"; do
+              if [ -f "$FILE" ]; then
+                DIRECTORIES+=("$(dirname "$FILE")")
+              else
+                echo "Skipping deleted Dockerfile: $FILE"
+              fi
+            done
+          fi
+
+          if [ "${#DIRECTORIES[@]}" -eq 0 ]; then
+            echo "No buildable Dockerfiles were found. Exiting."
+            echo "directories=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          JSON="["
+          for DIR in "${DIRECTORIES[@]}"; do
+            if [ ! -f "$DIR/Dockerfile" ]; then
+              echo "::error::Dockerfile not found at $DIR/Dockerfile."
+              exit 1
+            fi
+            JSON="$JSON\"$DIR\","
+          done
+          JSON="${JSON%,}]"
+
+          echo "Detected Dockerfile directories: $JSON"
+          echo "directories=$JSON" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: detect
+    if: >
+      github.event_name != 'push' &&
+      needs.detect.outputs.directories != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJson(needs.detect.outputs.directories) }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64,amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Prepare image metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIR="${{ matrix.directory }}"
+          APP_NAME=$(basename "$DIR")
+          DOCKERFILE_PATH="$DIR/Dockerfile"
+
+          if [ -n "${{ github.event.inputs.manual_version }}" ]; then
+            VERSION="${{ github.event.inputs.manual_version }}"
+            echo "Using manual override version: $VERSION"
+          else
+            VERSION_MARKER_LINE=$(awk '/^# build-version-source$/ { print NR; exit }' "$DOCKERFILE_PATH")
+            if [ -n "$VERSION_MARKER_LINE" ]; then
+              FROM_LINE=$(sed -n "$((VERSION_MARKER_LINE + 1))p" "$DOCKERFILE_PATH")
+            else
+              FROM_LINE=$(grep -E "^FROM[[:space:]]+" "$DOCKERFILE_PATH" | tail -n 1 || true)
+            fi
+
+            if [[ ! "$FROM_LINE" =~ ^FROM[[:space:]]+ ]]; then
+              echo "::error::Unable to find a FROM line for version extraction in $DOCKERFILE_PATH."
+              exit 1
+            fi
+
+            BASE_REF=$(awk '{
+              for (i = 2; i <= NF; i++) {
+                if ($i !~ /^--/) {
+                  print $i
+                  exit
+                }
+              }
+            }' <<< "$FROM_LINE")
+            BASE_REF_WITHOUT_DIGEST="${BASE_REF%@*}"
+            BASE_TAG="${BASE_REF_WITHOUT_DIGEST##*:}"
+
+            if [ "$BASE_TAG" = "$BASE_REF_WITHOUT_DIGEST" ]; then
+              echo "::error::Base image reference must include an explicit tag: $BASE_REF"
+              exit 1
+            fi
+
+            if [[ "$BASE_TAG" =~ ^v?([0-9]+([.][0-9]+)*) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              VERSION="$BASE_TAG"
+            fi
+
+            if [ "$VERSION" = "latest" ]; then
+              echo "::error::Refusing to publish a built image with the 'latest' tag. Use a versioned FROM line or manual_version."
+              exit 1
+            fi
+
+            echo "Automatically extracted target version: $VERSION"
+          fi
+
+          IMAGE_NAME=$(sed -n -E 's/^# build-image:[[:space:]]*//p' "$DOCKERFILE_PATH" | head -n 1)
+          if [ -z "$IMAGE_NAME" ]; then
+            IMAGE_NAME="$APP_NAME"
+          fi
+
+          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          if [[ ! "$IMAGE_NAME" =~ ^[a-z0-9]+([._-][a-z0-9]+)*$ ]]; then
+            echo "::error::Generated image name is not valid: $IMAGE_NAME"
+            exit 1
+          fi
+
+          TAG_SUFFIX=$(sed -n -E 's/^# build-tag-suffix:[[:space:]]*//p' "$DOCKERFILE_PATH" | head -n 1)
+          if [ -n "$TAG_SUFFIX" ] && [[ "$TAG_SUFFIX" != -* ]]; then
+            TAG_SUFFIX="-$TAG_SUFFIX"
+          fi
+
+          IMAGE_TAG="$VERSION$TAG_SUFFIX"
+          if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::Generated image tag is not a valid Docker tag: $IMAGE_TAG"
+            exit 1
+          fi
+
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_URI="ghcr.io/$REPO_LOWER/$IMAGE_NAME"
+
+          echo "image_ref=$IMAGE_URI:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "cache_scope=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "Building multi-arch image without pushing: $IMAGE_URI:$IMAGE_TAG"
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.directory }}
+          file: ${{ matrix.directory }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: ${{ steps.metadata.outputs.image_ref }}
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=${{ steps.metadata.outputs.cache_scope }}
+
+  push:
+    needs: detect
+    if: >
+      github.event_name == 'push' &&
+      needs.detect.outputs.directories != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJson(needs.detect.outputs.directories) }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64,amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Prepare image metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIR="${{ matrix.directory }}"
+          APP_NAME=$(basename "$DIR")
+          DOCKERFILE_PATH="$DIR/Dockerfile"
+
+          VERSION_MARKER_LINE=$(awk '/^# build-version-source$/ { print NR; exit }' "$DOCKERFILE_PATH")
+          if [ -n "$VERSION_MARKER_LINE" ]; then
+            FROM_LINE=$(sed -n "$((VERSION_MARKER_LINE + 1))p" "$DOCKERFILE_PATH")
+          else
+            FROM_LINE=$(grep -E "^FROM[[:space:]]+" "$DOCKERFILE_PATH" | tail -n 1 || true)
+          fi
+
+          if [[ ! "$FROM_LINE" =~ ^FROM[[:space:]]+ ]]; then
+            echo "::error::Unable to find a FROM line for version extraction in $DOCKERFILE_PATH."
+            exit 1
+          fi
+
+          BASE_REF=$(awk '{
+            for (i = 2; i <= NF; i++) {
+              if ($i !~ /^--/) {
+                print $i
+                exit
+              }
+            }
+          }' <<< "$FROM_LINE")
+          BASE_REF_WITHOUT_DIGEST="${BASE_REF%@*}"
+          BASE_TAG="${BASE_REF_WITHOUT_DIGEST##*:}"
+
+          if [ "$BASE_TAG" = "$BASE_REF_WITHOUT_DIGEST" ]; then
+            echo "::error::Base image reference must include an explicit tag: $BASE_REF"
+            exit 1
+          fi
+
+          if [[ "$BASE_TAG" =~ ^v?([0-9]+([.][0-9]+)*) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
+            VERSION="$BASE_TAG"
+          fi
+
+          if [ "$VERSION" = "latest" ]; then
+            echo "::error::Refusing to publish a built image with the 'latest' tag. Use a versioned FROM line."
+            exit 1
+          fi
+
+          IMAGE_NAME=$(sed -n -E 's/^# build-image:[[:space:]]*//p' "$DOCKERFILE_PATH" | head -n 1)
+          if [ -z "$IMAGE_NAME" ]; then
+            IMAGE_NAME="$APP_NAME"
+          fi
+
+          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          if [[ ! "$IMAGE_NAME" =~ ^[a-z0-9]+([._-][a-z0-9]+)*$ ]]; then
+            echo "::error::Generated image name is not valid: $IMAGE_NAME"
+            exit 1
+          fi
+
+          TAG_SUFFIX=$(sed -n -E 's/^# build-tag-suffix:[[:space:]]*//p' "$DOCKERFILE_PATH" | head -n 1)
+          if [ -n "$TAG_SUFFIX" ] && [[ "$TAG_SUFFIX" != -* ]]; then
+            TAG_SUFFIX="-$TAG_SUFFIX"
+          fi
+
+          IMAGE_TAG="$VERSION$TAG_SUFFIX"
+          if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::Generated image tag is not a valid Docker tag: $IMAGE_TAG"
+            exit 1
+          fi
+
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_URI="ghcr.io/$REPO_LOWER/$IMAGE_NAME"
+
+          echo "image_ref=$IMAGE_URI:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "cache_scope=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "Building multi-arch image and pushing to: $IMAGE_URI:$IMAGE_TAG"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.directory }}
+          file: ${{ matrix.directory }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.metadata.outputs.image_ref }}
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=${{ steps.metadata.outputs.cache_scope }}
+          cache-to: type=gha,mode=max,scope=${{ steps.metadata.outputs.cache_scope }}
