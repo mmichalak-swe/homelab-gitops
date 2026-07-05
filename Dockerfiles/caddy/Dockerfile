@@ -1,7 +1,13 @@
+# syntax=docker/dockerfile:1
 # build-image: caddy
 # build-tag-suffix: -alpine-custom-porkbun
-FROM caddy:2.11.4-builder-alpine@sha256:0ff10d4b83af453e5526b1c3cd7ae43396832aa8a2a55311d624f6812b33767d AS builder
-RUN xcaddy build --with github.com/caddy-dns/porkbun
+FROM --platform=$BUILDPLATFORM caddy:2.11.4-builder-alpine@sha256:0ff10d4b83af453e5526b1c3cd7ae43396832aa8a2a55311d624f6812b33767d AS builder
+ARG TARGETOS
+ARG TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 \
+    xcaddy build --with github.com/caddy-dns/porkbun
 
 # build-version-source
 FROM caddy:2.11.4-alpine@sha256:77c07d5ebfa5be9fd6c820d2094ae662c9e7eeb9bf98346b7f639900263ee2a2

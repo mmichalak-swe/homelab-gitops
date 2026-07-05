@@ -164,7 +164,14 @@ jobs:
               exit 1
             fi
 
-            BASE_REF=$(awk '{ print $2 }' <<< "$FROM_LINE")
+            BASE_REF=$(awk '{
+              for (i = 2; i <= NF; i++) {
+                if ($i !~ /^--/) {
+                  print $i
+                  exit
+                }
+              }
+            }' <<< "$FROM_LINE")
             BASE_REF_WITHOUT_DIGEST="${BASE_REF%@*}"
             BASE_TAG="${BASE_REF_WITHOUT_DIGEST##*:}"
 
@@ -283,7 +290,14 @@ jobs:
             exit 1
           fi
 
-          BASE_REF=$(awk '{ print $2 }' <<< "$FROM_LINE")
+          BASE_REF=$(awk '{
+            for (i = 2; i <= NF; i++) {
+              if ($i !~ /^--/) {
+                print $i
+                exit
+              }
+            }
+          }' <<< "$FROM_LINE")
           BASE_REF_WITHOUT_DIGEST="${BASE_REF%@*}"
           BASE_TAG="${BASE_REF_WITHOUT_DIGEST##*:}"
 
