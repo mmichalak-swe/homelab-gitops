@@ -28,13 +28,12 @@ services:
       retries: 3
       start_period: 10s
     hostname: caddy
-    image: caddy:2.11.4-alpine-custom-porkbun
+    image: ghcr.io/mmichalak-swe/homelab-gitops/caddy:2.11.4-alpine-custom-porkbun@sha256:ead43c0a23ef4018522ed1f9f2e0e67eaa1c9228561adc2ca04eb6b636bbe46c
     networks:
       caddy-net:
         ipv4_address: 172.19.0.5
     ports:
       - '443:443'
-    pull_policy: never
     read_only: true
     restart: unless-stopped
     security_opt:
