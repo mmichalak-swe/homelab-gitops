@@ -29,9 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Install yq
         uses: mikefarah/yq@v4
@@ -107,9 +105,7 @@ jobs:
             trivy-db-${{ runner.os }}-
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Install Trivy CLI
         uses: aquasecurity/setup-trivy@v0.3.1
@@ -182,9 +178,7 @@ jobs:
           persist-credentials: false
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Download Trivy JSON artifacts
         uses: actions/download-artifact@v8
