@@ -30,8 +30,6 @@ jobs:
 
       - name: Install jq
         uses: dcarbone/install-jq-action@v4
-        with:
-          version: '1.7.1'
 
       - name: Install yq
         uses: mikefarah/yq@v4
@@ -108,8 +106,6 @@ jobs:
 
       - name: Install jq
         uses: dcarbone/install-jq-action@v4
-        with:
-          version: '1.7.1'
 
       - name: Install Trivy CLI
         uses: aquasecurity/setup-trivy@v0.3.1
@@ -183,8 +179,6 @@ jobs:
 
       - name: Install jq
         uses: dcarbone/install-jq-action@v4
-        with:
-          version: '1.7.1'
 
       - name: Download Trivy JSON artifacts
         uses: actions/download-artifact@v8
