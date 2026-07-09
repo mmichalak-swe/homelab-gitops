@@ -23,7 +23,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: caddy
-    image: ghcr.io/mmichalak-swe/homelab-gitops/caddy:2.11.4-alpine-custom-porkbun@sha256:ead43c0a23ef4018522ed1f9f2e0e67eaa1c9228561adc2ca04eb6b636bbe46c
+    image: ghcr.io/mmichalak-swe/homelab-gitops/caddy:2.11.4-alpine-custom-porkbun@sha256:fe883d07fdef83aceb23af8cf6adeb1b320926f2329a542452a649630467c03c
     networks:
       caddy-net:
         ipv4_address: 172.18.0.5
