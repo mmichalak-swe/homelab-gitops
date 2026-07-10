@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: drawio
-    image: jgraph/drawio:30.2.7@sha256:8b2e768882053c051a46d7b1a6c4594ba2c85d16083c19c448e010cd4df80784
+    image: jgraph/drawio:30.3.6@sha256:972f6d497346003e513518c37b11374d18148fb82eaa909300f20f9eb32166d2
     networks:
       caddy-net:
         ipv4_address: 172.19.0.22
