@@ -39,7 +39,7 @@ services:
     expose:
       - 80
     hostname: pihole-rpi4
-    image: pihole/pihole:2026.05.0@sha256:70a9c11171ded2eee735d88c127996da209284a329d50f5ae59c06b861d401b3
+    image: pihole/pihole:2026.07.2@sha256:f7d1be836e3bc608b56d82fc9904f5a831cdfbc0dc9c6d58f94e4c985c70038b
     networks:
       caddy-net:
         ipv4_address: 172.18.0.2

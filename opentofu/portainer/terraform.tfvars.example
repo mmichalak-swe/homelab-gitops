@@ -1,0 +1,178 @@
+repository_url            = "https://github.com/user/project.git"
+repository_reference_name = "refs/heads/main"
+
+infisical_project_id                         = "your-infisical-project-id"
+infisical_env_slug                           = "prod"
+infisical_portainer_config_enabled           = true
+infisical_stack_env_enabled                  = true
+infisical_dockerhub_registry_tokens_enabled  = true
+
+# Leave unset for Infisical Cloud. Set only for self-hosted Infisical.
+# infisical_host = "https://infisical.example.com"
+
+# Keep Infisical auth in a local, ignored *.auto.tfvars file for local runs.
+# infisical_auth = {
+#   universal = {
+#     client_id     = "..."
+#     client_secret = "..."
+#   }
+# }
+
+# Optional local-only fallback when infisical_portainer_config_enabled is false.
+# portainer_endpoint = "https://portainer.example.com"
+# portainer_api_key  = "ptr_..."
+
+# Optional: test one stack against dev secrets while the rest use infisical_env_slug.
+# infisical_stack_env_overrides = {
+#   "6194cicero-gmk-g3/speedtest" = {
+#     env_slug = "dev"
+#   }
+# }
+
+stack_repository_reference_names = {
+  "6194cicero-gmk-g3/volume-backup" = "refs/heads/add-docker-volume-backup-test-tzdata"
+}
+
+dockerhub_registries = {
+  dockerhub_personal = {
+    name     = "Docker Hub - Primary"
+    # Portainer registry type 6 is Docker Hub.
+    type     = 6
+    url      = "docker.io"
+    username = ""
+  }
+
+  dockerhub_dhi = {
+    name     = "Docker Hub - DHI"
+    # Portainer registry type 6 is Docker Hub.
+    type     = 6
+    url      = "your-dhi-registry-url"
+    username = ""
+  }
+}
+
+# Optional local fallback when infisical_dockerhub_registry_tokens_enabled is false.
+# dockerhub_registry_tokens = {
+#   dockerhub_personal = "dckr_pat_..."
+#   dockerhub_dhi      = "dckr_pat_..."
+# }
+
+portainer_environment_names = {
+  "6194cicero-gmk-g3"      = "6194cicero-gmk-g3"
+  "6194cicero-raspberrypi" = "6194cicero-raspberrypi"
+}
+
+# If this repository is private, set these to match the existing Portainer stack.
+# git_repository_authentication = true
+# repository_git_credential_id  = 1
+
+# Optional local fallback values. When infisical_stack_env_enabled is true,
+# Infisical secrets from /hosts/<host>/<app> override this map.
+stack_env = {
+  "6194cicero-gmk-g3/volume-backup" = {
+    TZ = "America/New_York"
+  }
+
+  "6194cicero-gmk-g3/caddy" = {
+    PORKBUN_API_KEY        = ""
+    PORKBUN_API_SECRET_KEY = ""
+  }
+
+  "6194cicero-gmk-g3/nebula-sync" = {
+    CRON        = ""
+    FULL_SYNC   = ""
+    PRIMARY     = ""
+    REPLICAS    = ""
+    RUN_GRAVITY = ""
+    TZ          = "America/New_York"
+  }
+
+  "6194cicero-gmk-g3/pairdrop" = {
+    DEBUG_MODE  = ""
+    RATE_LIMIT  = ""
+    TZ          = "America/New_York"
+    WS_FALLBACK = ""
+  }
+
+  "6194cicero-gmk-g3/pihole" = {
+    DNSMASQ_USER                   = ""
+    FTLCONF_dns_bogusPriv          = ""
+    FTLCONF_dns_dnssec             = ""
+    FTLCONF_dns_domainNeeded       = ""
+    FTLCONF_dns_listeningMode      = ""
+    FTLCONF_dns_upstreams          = ""
+    FTLCONF_webserver_api_password = ""
+    PIHOLE_GID                     = ""
+    PIHOLE_UID                     = ""
+    TZ                             = "America/New_York"
+  }
+
+  "6194cicero-gmk-g3/speedtest" = {
+    APP_KEY                  = ""
+    APP_URL                  = ""
+    DB_CONNECTION            = ""
+    DISPLAY_TIMEZONE         = "America/New_York"
+    PRUNE_RESULTS_OLDER_THAN = ""
+    SPEEDTEST_SCHEDULE       = ""
+    SPEEDTEST_SERVERS        = ""
+    TZ                       = "America/New_York"
+  }
+
+  "6194cicero-raspberrypi/vaultwarden" = {
+    DOMAIN = ""
+  }
+
+  "6194cicero-raspberrypi/authelia" = {
+    AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE = ""
+    AUTHELIA_SESSION_SECRET_FILE                               = ""
+    AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE                       = ""
+    TZ                                                         = "America/New_York"
+  }
+
+  "6194cicero-raspberrypi/caddy" = {
+    PORKBUN_API_KEY        = ""
+    PORKBUN_API_SECRET_KEY = ""
+  }
+
+  "6194cicero-raspberrypi/homer" = {
+    INIT_ASSETS = ""
+  }
+
+  "6194cicero-raspberrypi/monitoring" = {
+    GF_SECURITY_ADMIN_USER                    = ""
+    GF_SECURITY_ADMIN_PASSWORD                = ""
+    GF_USERS_ALLOW_SIGN_UP                    = ""
+    GF_PATHS_CONFIG                           = ""
+    GF_PATHS_DATA                             = ""
+    GF_PATHS_HOME                             = ""
+    GF_PATHS_LOGS                             = ""
+    GF_PATHS_PLUGINS                          = ""
+    GF_PATHS_PROVISIONING                     = ""
+    GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH = ""
+  }
+
+  "6194cicero-raspberrypi/pihole" = {
+    DNSMASQ_USER                   = ""
+    FTLCONF_dns_bogusPriv          = ""
+    FTLCONF_dns_dnssec             = ""
+    FTLCONF_dns_domainNeeded       = ""
+    FTLCONF_dns_listeningMode      = ""
+    FTLCONF_dns_upstreams          = ""
+    FTLCONF_webserver_api_password = ""
+    PIHOLE_GID                     = ""
+    PIHOLE_UID                     = ""
+    TZ                             = "America/New_York"
+  }
+
+  "6194cicero-raspberrypi/wireguard-ls" = {
+    ALLOWEDIPS                = ""
+    INTERNAL_SUBNET           = ""
+    LOG_CONFS                 = ""
+    PEERS                     = ""
+    PEERDNS                   = ""
+    PERSISTENTKEEPALIVE_PEERS = ""
+    SERVERPORT                = ""
+    SERVERURL                 = ""
+    TZ                        = "America/New_York"
+  }
+}

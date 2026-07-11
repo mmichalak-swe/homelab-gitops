@@ -1,47 +1,45 @@
-name: Trivy Scan PRs
+name: Trivy Scan Compose PRs
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    branches:
+      - main
+    paths:
+      - 'hosts/*/*/compose.yml'
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   discover-images:
     runs-on: ubuntu-latest
-    if: >
-      (
-        github.event.pull_request.user.login == 'dependabot[bot]' ||
-        github.event.pull_request.user.login == 'renovate[bot]'
-      ) &&
-      github.event.pull_request.base.ref == 'main' &&
-      contains(github.event.pull_request.labels.*.name, 'dependencies') &&
-      (
-        contains(github.event.pull_request.labels.*.name, 'docker') ||
-        contains(github.event.pull_request.labels.*.name, 'docker_compose')
-      )
     outputs:
       images: ${{ steps.images.outputs.images_json }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Install yq
         uses: mikefarah/yq@v4
 
-      - name: Find changed compose files
+      - name: Find changed host compose files
         id: changed
         uses: tj-actions/changed-files@v47
         with:
           files: |
-            **/compose.yml
-            **/compose.yaml
+            hosts/*/*/compose.yml
 
       - name: Extract images from changed compose files
         id: images
@@ -90,14 +88,16 @@ jobs:
         image: ${{ fromJson(needs.discover-images.outputs.images) }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set weekly cache key
         shell: bash
         run: echo "WEEK=$(date +'%G%V')" >> "$GITHUB_ENV"
 
       - name: Cache Trivy DB (rotates weekly)
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/trivy
           key: trivy-db-${{ runner.os }}-${{ env.WEEK }}
@@ -105,12 +105,10 @@ jobs:
             trivy-db-${{ runner.os }}-
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Install Trivy CLI
-        uses: aquasecurity/setup-trivy@v0.2.6
+        uses: aquasecurity/setup-trivy@v0.3.1
 
       - name: Prepare per-image filenames
         id: names
@@ -167,17 +165,20 @@ jobs:
   comment:
     needs: [discover-images, trivy]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     if: >
       success() &&
       needs.discover-images.outputs.images != '[]' &&
       needs.discover-images.outputs.images != ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Install jq
-        uses: dcarbone/install-jq-action@v3
-        with:
-          version: '1.7.1'
+        uses: dcarbone/install-jq-action@v4
 
       - name: Download Trivy JSON artifacts
         uses: actions/download-artifact@v8
@@ -202,12 +203,11 @@ jobs:
           FOUND_JSON=0
           while IFS= read -r -d '' f; do
             FOUND_JSON=1
-            # Extract image name from filename instead of JSON
-            FILENAME=$(basename "$f" .json)
-            IMG="${FILENAME#trivy-}"
-            IMG="${IMG//__-/ /}"
-            IMG="${IMG//__/: }"
-            IMG="${IMG//-/ }"
+            IMG=$(jq -r '.ArtifactName // empty' "$f")
+            if [ -z "$IMG" ]; then
+              FILENAME=$(basename "$f" .json)
+              IMG="${FILENAME#trivy-}"
+            fi
 
             {
               echo "Image: \`$IMG\`"

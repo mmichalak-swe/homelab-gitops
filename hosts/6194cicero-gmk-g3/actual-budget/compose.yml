@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 20s
     hostname: actual-server
-    image: actualbudget/actual-server:26.5.2-alpine@sha256:12082ca89dbc5e93b6f806074c19282d97ff04579c784bcdfbe996ce5c52bd0d
+    image: actualbudget/actual-server:26.7.0-alpine@sha256:1449173e2221eb9387da866723808a1fa32a3e92e5cca5df65dc90a532c81ac8
     networks:
       caddy-net:
         ipv4_address: 172.19.0.23
