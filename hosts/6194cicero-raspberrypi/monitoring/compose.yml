@@ -70,12 +70,13 @@ services:
       - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=${GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH}
     expose:
       - 3000
-    healthcheck:
-      test: curl -f http://localhost:3000/api/health || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    ## Removed for distroless, otherwise shows as unhealthy
+    # healthcheck:
+    #   test: curl -f http://localhost:3000/api/health || exit 1
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 10s
     hostname: monitoring-grafana
     image: grafana/grafana:13.1.1-distroless-slim@sha256:f53ce340797d5cb3611e83e09d7516411110442f5b631bd3798b4653cfb0d505
     networks:
