@@ -77,7 +77,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: monitoring-grafana
-    image: grafana/grafana:13.1.1@sha256:7cb8c64c4d57a57e734073f3cc94620adb24a0acb929bd80ba9f14017e3a975b
+    image: grafana/grafana:13.1.1-distroless-slim@sha256:f53ce340797d5cb3611e83e09d7516411110442f5b631bd3798b4653cfb0d505
     networks:
       caddy-net:
         ipv4_address: 172.18.0.11
