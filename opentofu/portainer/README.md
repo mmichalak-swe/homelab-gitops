@@ -141,7 +141,7 @@ versions can exist temporarily. The rule's prefix also covers old
    values to the existing ignored `local.auto.tfvars`:
 
    ```hcl
-   aws_region        = "us-east-1"
+   aws_region        = "aws-region"
    state_bucket_name = "replace-with-your-globally-unique-bucket-name"
    ```
 
