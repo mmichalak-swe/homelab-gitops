@@ -5,7 +5,18 @@ language {
 }
 
 terraform {
+  backend "s3" {
+    key          = "portainer/terraform.tfstate"
+    encrypt      = true
+    use_lockfile = true
+  }
+
   required_providers {
+    aws = {
+      source  = "registry.opentofu.org/hashicorp/aws"
+      version = "6.56.0"
+    }
+
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"
       version = "0.19.6"

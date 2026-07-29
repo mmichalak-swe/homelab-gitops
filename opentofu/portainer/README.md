@@ -10,11 +10,13 @@ This directory is one OpenTofu root. Files are split by concern for readability:
 versions.tofu
 providers.tofu
 
+variables.aws.tofu
 variables.infisical.tofu
 variables.portainer.tofu
 variables.registries.tofu
 variables.stacks.tofu
 
+state_bucket.tofu
 infisical.portainer.tofu
 infisical.registries.tofu
 infisical.stack-env.tofu
@@ -59,6 +61,7 @@ infisical_dockerhub_registry_tokens_enabled = true
 
 Keep these in local tfvars:
 
+- AWS settings: `aws_region`, `state_bucket_name`, and optional `state_bucket_tags`
 - Infisical bootstrap/auth values: `infisical_project_id`, `infisical_env_slug`, `infisical_auth`, and optional `infisical_host`
 - Repository settings: `repository_url`, `repository_reference_name`, and any stack-specific reference overrides
 - Non-secret Portainer object shape: `dockerhub_registries`, Git credential IDs, and stack behavior toggles
@@ -85,6 +88,132 @@ If the existing stack uses a saved Portainer Git credential, set:
 ```hcl
 git_repository_authentication = true
 repository_git_credential_id  = 1
+```
+
+## AWS S3 State Backend
+
+This root stores state at `s3://<bucket>/portainer/terraform.tfstate` and uses
+OpenTofu's native S3 lock file. The bucket and region are supplied as partial
+backend configuration so credentials and deployment-specific values are not
+committed.
+
+The same root manages its backend bucket. The bucket resource has
+`prevent_destroy = true`, versioning, SSE-S3 encryption, bucket-owner-enforced
+ownership, all bucket-level public access blocks enabled, and lifecycle
+retention for five state snapshots. Before deleting or replacing this bucket,
+migrate the state to another backend.
+
+The lifecycle rule retains the current state object and its four newest
+noncurrent versions. Older noncurrent versions become eligible for permanent
+deletion after one day. S3 requires a positive noncurrent age, so more than five
+versions can exist temporarily. The rule's prefix also covers old
+`terraform.tfstate.tflock` versions created by native S3 state locking.
+
+### One-time migration and import
+
+1. In AWS, manually create a globally unique S3 bucket. Create it in the region
+   you intend to use and enable:
+
+   - Bucket versioning
+   - SSE-S3 (`AES256`) default encryption
+   - Bucket owner enforced object ownership
+   - All four Block Public Access settings
+
+   Do not upload a state file or create a lifecycle rule manually. OpenTofu will
+   create the lifecycle rule after the bucket settings are imported.
+
+2. Authenticate to AWS with the profile or environment used by both OpenTofu's
+   S3 backend and AWS provider. Do not put AWS credentials in either backend
+   configuration or tfvars. For example:
+
+   ```shell
+   export AWS_PROFILE=homelab
+   aws sts get-caller-identity
+   ```
+
+3. From `opentofu/portainer`, create the ignored partial backend configuration:
+
+   ```shell
+   cp backend.s3.tfbackend.example backend.s3.tfbackend
+   ```
+
+   Replace the example bucket and region in `backend.s3.tfbackend`. Add the same
+   values to the existing ignored `local.auto.tfvars`:
+
+   ```hcl
+   aws_region        = "aws-region"
+   state_bucket_name = "replace-with-your-globally-unique-bucket-name"
+   ```
+
+   The backend file and provider variables are separate because backend blocks
+   cannot refer to input variables.
+
+4. Make a protected backup copy of the existing local `terraform.tfstate`
+   outside this repository. State contains secrets; do not commit or share the
+   backup.
+
+5. Migrate the complete existing state to S3:
+
+   ```shell
+   tofu init -migrate-state -backend-config=backend.s3.tfbackend
+   ```
+
+   Review the source and destination in OpenTofu's prompt before confirming the
+   migration. Do not run `tofu import` before this step.
+
+6. Verify that OpenTofu can read the migrated state and that the S3 object
+   exists:
+
+   ```shell
+   tofu state list
+   aws s3api head-object \
+     --bucket replace-with-your-globally-unique-bucket-name \
+     --key portainer/terraform.tfstate
+   ```
+
+7. Import the manually configured bucket and each existing bucket setting into
+   the now-remote state:
+
+   ```shell
+   tofu import aws_s3_bucket.portainer_state replace-with-your-globally-unique-bucket-name
+   tofu import aws_s3_bucket_ownership_controls.portainer_state replace-with-your-globally-unique-bucket-name
+   tofu import aws_s3_bucket_public_access_block.portainer_state replace-with-your-globally-unique-bucket-name
+   tofu import aws_s3_bucket_server_side_encryption_configuration.portainer_state replace-with-your-globally-unique-bucket-name
+   tofu import aws_s3_bucket_versioning.portainer_state replace-with-your-globally-unique-bucket-name
+   ```
+
+   If a setting was not created manually, its import will report that no remote
+   object exists. Leave that resource unimported; the next plan will propose
+   creating the missing setting. If you already created a lifecycle
+   configuration manually, import it as well:
+
+   ```shell
+   tofu import aws_s3_bucket_lifecycle_configuration.portainer_state replace-with-your-globally-unique-bucket-name
+   ```
+
+   An S3 bucket has one lifecycle configuration. Importing or applying this
+   resource makes OpenTofu authoritative for the bucket's complete lifecycle
+   rule set.
+
+8. Review the result:
+
+   ```shell
+   tofu plan
+   ```
+
+   Expect only intentional differences such as the configured tags or a
+   manually omitted bucket setting. Apply only after the plan is understood.
+
+The AWS identity used by the backend needs `s3:ListBucket` on the bucket and
+`s3:GetObject`, `s3:PutObject`, and `s3:DeleteObject` on both
+`portainer/terraform.tfstate` and `portainer/terraform.tfstate.tflock`. Managing
+the bucket resources also requires the corresponding S3 configuration and
+tagging permissions.
+
+For later backend configuration changes, rerun:
+
+```shell
+tofu init -reconfigure -backend-config=backend.s3.tfbackend
 ```
 
 ## Infisical Provider Config

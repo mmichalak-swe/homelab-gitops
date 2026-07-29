@@ -2,6 +2,7 @@
 **/*.tfstate
 **/*.tfstate.*
 **/*.tfplan
+**/*.tfbackend
 **/*.tfvars
 **/*.tfvars.*
 **/*.tfvars.json
@@ -22,3 +23,4 @@ terraform.rc
 tofu.rc
 
 !**/*.tfvars.example
+!**/*.tfbackend.example
