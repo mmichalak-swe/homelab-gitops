@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'Dockerfiles/*/Dockerfile'
+      - 'Dockerfiles/**'
   push:
     branches:
       - main
     paths:
-      - 'Dockerfiles/*/Dockerfile'
+      - 'Dockerfiles/**'
   workflow_dispatch:
     inputs:
       manual_directory:
@@ -49,6 +49,7 @@ jobs:
           set -euo pipefail
 
           declare -a DIRECTORIES=()
+          declare -A SEEN_DIRECTORIES=()
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MANUAL_DIRECTORY="${{ github.event.inputs.manual_directory }}"
@@ -64,33 +65,41 @@ jobs:
 
             DIRECTORIES=("$MANUAL_DIRECTORY")
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -E "^Dockerfiles/[^/]+/Dockerfile$" || true)
+            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -E "^Dockerfiles/[^/]+/" || true)
             if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
-              echo "No Dockerfiles were modified. Exiting."
+              echo "No Docker build contexts were modified. Exiting."
               echo "directories=[]" >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
             for FILE in "${CHANGED_FILES[@]}"; do
-              if [ -f "$FILE" ]; then
-                DIRECTORIES+=("$(dirname "$FILE")")
-              else
-                echo "Skipping deleted Dockerfile: $FILE"
+              DIR=$(cut -d/ -f1-2 <<< "$FILE")
+              if [ ! -f "$DIR/Dockerfile" ]; then
+                echo "Skipping context without a Dockerfile: $DIR"
+                continue
+              fi
+              if [ -z "${SEEN_DIRECTORIES[$DIR]+x}" ]; then
+                DIRECTORIES+=("$DIR")
+                SEEN_DIRECTORIES["$DIR"]=1
               fi
             done
           else
-            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -E "^Dockerfiles/[^/]+/Dockerfile$" || true)
+            mapfile -t CHANGED_FILES < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -E "^Dockerfiles/[^/]+/" || true)
             if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
-              echo "No Dockerfiles were modified. Exiting."
+              echo "No Docker build contexts were modified. Exiting."
               echo "directories=[]" >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
             for FILE in "${CHANGED_FILES[@]}"; do
-              if [ -f "$FILE" ]; then
-                DIRECTORIES+=("$(dirname "$FILE")")
-              else
-                echo "Skipping deleted Dockerfile: $FILE"
+              DIR=$(cut -d/ -f1-2 <<< "$FILE")
+              if [ ! -f "$DIR/Dockerfile" ]; then
+                echo "Skipping context without a Dockerfile: $DIR"
+                continue
+              fi
+              if [ -z "${SEEN_DIRECTORIES[$DIR]+x}" ]; then
+                DIRECTORIES+=("$DIR")
+                SEEN_DIRECTORIES["$DIR"]=1
               fi
             done
           fi

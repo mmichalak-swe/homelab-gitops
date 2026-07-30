@@ -1,0 +1,32 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+
+	# TLS is terminated by the reverse proxy, so the backend only needs h1.
+	servers {
+		protocols h1
+	}
+}
+
+http://:8080 {
+	root * /srv
+
+	# Keep the container health check independent of application assets.
+	respond /healthz 200
+
+	# These directories are removed during the build. Keep this rule as
+	# defense in depth in case the source layout changes in a future release.
+	@sensitive path /WEB-INF/* /META-INF/*
+	respond @sensitive 404
+
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+
+	encode zstd gzip
+	file_server
+}
