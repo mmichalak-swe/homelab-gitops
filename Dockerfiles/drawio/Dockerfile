@@ -4,6 +4,11 @@
 FROM jgraph/drawio:31.1.5@sha256:9dfa053d1fe2724f824c61eac8b8bb2e93acc8ecb23dea58b8c11028127c572c AS upstream
 FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS source
 
+LABEL maintainer="mmichalak-swe" \
+      org.opencontainers.image.authors="mmichalak-swe" \
+      org.opencontainers.image.url="https://github.com/mmichalak-swe/homelab-gitops" \
+      org.opencontainers.image.source="https://github.com/jgraph/docker-drawio"
+
 # The upstream image has already built and extracted the WAR. Copy only its
 # webapp into a disposable stage, then remove its server-side components.
 COPY --from=upstream /usr/local/tomcat/webapps/draw/ /src/
@@ -14,11 +19,6 @@ RUN rm -rf /src/WEB-INF /src/META-INF
 COPY PreConfig.js /src/js/PreConfig.js
 
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
-
-LABEL maintainer="mmichalak-swe" \
-      org.opencontainers.image.authors="mmichalak-swe" \
-      org.opencontainers.image.url="https://github.com/mmichalak-swe/homelab-gitops" \
-      org.opencontainers.image.source="https://github.com/jgraph/docker-drawio"
 
 # The official image grants Caddy CAP_NET_BIND_SERVICE so it can bind ports
 # below 1024. This image listens on 8080, and retaining that file capability
