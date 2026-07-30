@@ -36,7 +36,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer
-    image: portainer/portainer-ce:2.43.0-alpine@sha256:b39d73976b94d945f6e62ac727ca65d1cf9b46dc9d2c3c0e833ef0422469f09e
+    image: portainer/portainer-ce:2.44.0-alpine@sha256:c837b7aefd7b69583ac9ff871cd214dae20ebceaa83853578508f8131fc0b279
     networks:
       caddy-net:
         ipv4_address: 172.18.0.20
