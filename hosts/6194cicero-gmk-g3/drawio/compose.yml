@@ -16,11 +16,11 @@ services:
     expose:
       - 8080
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 3s
       retries: 3
-      start_period: 10s
+      start_period: 5s
     hostname: drawio
     image: ghcr.io/mmichalak-swe/homelab-gitops/drawio:31.1.5-alpine-custom@sha256:ec529041139f63656063dae2d70e2dae6540920aec01ebb734d92aa38ac92125
     networks:
