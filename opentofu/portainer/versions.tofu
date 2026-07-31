@@ -24,7 +24,7 @@ terraform {
 
     portainer = {
       source  = "registry.opentofu.org/portainer/portainer"
-      version = "1.34.1"
+      version = "1.34.2"
     }
   }
 }
