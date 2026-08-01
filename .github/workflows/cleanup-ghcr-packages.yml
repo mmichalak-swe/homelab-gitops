@@ -34,10 +34,15 @@ jobs:
         id: packages
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
+
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::The GHCR_READ_TOKEN secret is required and must have read:packages scope."
+            exit 1
+          fi
 
           ACCOUNT_TYPE=$(gh api "/users/$OWNER" --jq '.type')
           if [ "$ACCOUNT_TYPE" = "Organization" ]; then
@@ -50,13 +55,13 @@ jobs:
 
           REPOSITORY_NAME="${GITHUB_REPOSITORY#*/}"
           PACKAGE_PREFIX="${REPOSITORY_NAME,,}/"
-          PACKAGES_JSON=$(gh api --paginate --slurp \
-            "$PACKAGE_OWNER_ENDPOINT/packages?package_type=container&per_page=100" \
-            | jq -c --arg prefix "$PACKAGE_PREFIX" '
+          PACKAGES_RESPONSE=$(gh api --paginate --slurp \
+            "$PACKAGE_OWNER_ENDPOINT/packages?package_type=container&per_page=100")
+          PACKAGES_JSON=$(jq -c --arg prefix "$PACKAGE_PREFIX" '
                 add
                 | [.[] | select(.name | startswith($prefix)) | .name]
                 | unique
-              ')
+              ' <<< "$PACKAGES_RESPONSE")
 
           echo "Discovered packages: $PACKAGES_JSON"
           echo "packages=$PACKAGES_JSON" >> "$GITHUB_OUTPUT"
