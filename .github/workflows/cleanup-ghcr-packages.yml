@@ -1,0 +1,130 @@
+name: Cleanup GHCR Packages
+
+on:
+  push:
+    branches:
+      - feature/cleanup-ghcr-package-versions
+  schedule:
+    - cron: '17 3,5,7 15 * *'
+      timezone: 'America/New_York'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview package versions without deleting them.'
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  packages: write
+
+jobs:
+  discover-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+      account: ${{ steps.packages.outputs.account }}
+    steps:
+      - name: Discover repository packages from GHCR
+        id: packages
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+
+          ACCOUNT_TYPE=$(gh api "/users/$OWNER" --jq '.type')
+          if [ "$ACCOUNT_TYPE" = "Organization" ]; then
+            PACKAGE_OWNER_ENDPOINT="/orgs/$OWNER"
+            ACTION_ACCOUNT="$OWNER"
+          else
+            PACKAGE_OWNER_ENDPOINT="/users/$OWNER"
+            ACTION_ACCOUNT="user"
+          fi
+
+          REPOSITORY_NAME="${GITHUB_REPOSITORY#*/}"
+          PACKAGE_PREFIX="${REPOSITORY_NAME,,}/"
+          PACKAGES_JSON=$(gh api --paginate --slurp \
+            "$PACKAGE_OWNER_ENDPOINT/packages?package_type=container&per_page=100" \
+            | jq -c --arg prefix "$PACKAGE_PREFIX" '
+                add
+                | [.[] | select(.name | startswith($prefix)) | .name]
+                | unique
+              ')
+
+          echo "Discovered packages: $PACKAGES_JSON"
+          echo "packages=$PACKAGES_JSON" >> "$GITHUB_OUTPUT"
+          echo "account=$ACTION_ACCOUNT" >> "$GITHUB_OUTPUT"
+
+  cleanup:
+    needs: discover-packages
+    if: needs.discover-packages.outputs.packages != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.discover-packages.outputs.packages) }}
+    steps:
+      - name: Keep the three newest package versions
+        id: retention
+        uses: snok/container-retention-policy@v3.1.0
+        with:
+          account: ${{ needs.discover-packages.outputs.account }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: ${{ matrix.package }}
+          tag-selection: both
+          cut-off: 0s
+          keep-n-most-recent: 3
+          timestamp-to-use: created_at
+          dry-run: ${{ github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.dry_run) }}
+
+      - name: Report deletion failures
+        if: steps.retention.outputs.failed != ''
+        env:
+          FAILED_VERSIONS: ${{ steps.retention.outputs.failed }}
+        run: |
+          echo "::error::Failed to delete package versions: $FAILED_VERSIONS"
+          exit 1
+
+  notify:
+    needs: [discover-packages, cleanup]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Determine workflow status
+        id: status
+        shell: bash
+        env:
+          DISCOVERY_RESULT: ${{ needs.discover-packages.result }}
+          CLEANUP_RESULT: ${{ needs.cleanup.result }}
+        run: |
+          if [ "$DISCOVERY_RESULT" = "failure" ] || [ "$CLEANUP_RESULT" = "failure" ]; then
+            STATUS="Failure"
+          elif [ "$DISCOVERY_RESULT" = "cancelled" ] || [ "$CLEANUP_RESULT" = "cancelled" ]; then
+            STATUS="Cancelled"
+          else
+            STATUS="Success"
+          fi
+
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Send message to Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: ${{ steps.status.outputs.status }}
+          title: GHCR Package Cleanup
+          description: |
+            Discovery: `${{ needs.discover-packages.result }}`
+            Cleanup: `${{ needs.cleanup.result }}`
+            Dry run: `${{ github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.dry_run) }}`
+          url: ${{ format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
