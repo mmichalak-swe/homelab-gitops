@@ -1,9 +1,6 @@
 name: Cleanup GHCR Packages
 
 on:
-  push:
-    branches:
-      - feature/cleanup-ghcr-package-versions
   schedule:
     - cron: '17 3,5,7 15 * *'
       timezone: 'America/New_York'
@@ -88,7 +85,7 @@ jobs:
           cut-off: 0s
           keep-n-most-recent: 3
           timestamp-to-use: created_at
-          dry-run: ${{ github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.dry_run) }}
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
 
       - name: Report deletion failures
         if: steps.retention.outputs.failed != ''
@@ -131,5 +128,5 @@ jobs:
           description: |
             Discovery: `${{ needs.discover-packages.result }}`
             Cleanup: `${{ needs.cleanup.result }}`
-            Dry run: `${{ github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.dry_run) }}`
+            Dry run: `${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}`
           url: ${{ format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
