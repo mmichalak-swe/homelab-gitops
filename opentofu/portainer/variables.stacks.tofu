@@ -1,6 +1,7 @@
 variable "stack_defaults" {
   description = "Default behavior for Portainer Git-backed stacks."
   type = object({
+    active                = bool
     force_update          = bool
     ownership             = string
     prune                 = bool
@@ -12,6 +13,7 @@ variable "stack_defaults" {
   })
 
   default = {
+    active                = true
     force_update          = false
     ownership             = "administrators"
     prune                 = true
