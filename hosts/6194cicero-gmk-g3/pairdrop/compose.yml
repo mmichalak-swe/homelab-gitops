@@ -32,7 +32,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: pairdrop
-    image: linuxserver/pairdrop:1.11.2@sha256:db0b99532f262410d4ca932d61eec248e4b6756a05f1516546f4b7baa96f1594
+    image: linuxserver/pairdrop:1.11.2@sha256:3279d2d986c01a223f76e306e222a742508baf75b8eca03b097f25d9344584f6
     networks:
       caddy-net:
         ipv4_address: 172.19.0.21
