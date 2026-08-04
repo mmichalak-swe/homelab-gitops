@@ -23,6 +23,7 @@ module "stack" {
     try(local.infisical_stack_env[each.key], {}),
   )
 
+  active                        = try(each.value.active, var.stack_defaults.active)
   force_update                  = try(each.value.force_update, var.stack_defaults.force_update)
   git_repository_authentication = var.git_repository_authentication
   ownership                     = try(each.value.ownership, var.stack_defaults.ownership)
