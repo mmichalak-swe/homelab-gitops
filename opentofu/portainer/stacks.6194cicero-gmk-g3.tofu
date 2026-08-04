@@ -47,7 +47,7 @@ locals {
       host                      = "6194cicero-gmk-g3"
       file_path_in_repository   = "hosts/6194cicero-gmk-g3/volume-backup/compose.yml"
       repository_reference_name = lookup(var.stack_repository_reference_names, "6194cicero-gmk-g3/volume-backup", var.repository_reference_name)
-      update_interval           = "24h"
+      update_interval           = "1h"
       active                    = false
     }
   }
