@@ -32,7 +32,3 @@ services:
       - no-new-privileges:true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m
-      - /run:rw,noexec,nosuid,nodev,size=16m
-      - /usr/local/tomcat/temp:rw,noexec,nosuid,nodev,size=64m
-      - /usr/local/tomcat/work:rw,noexec,nosuid,nodev,size=128m
-      - /usr/local/tomcat/logs:rw,noexec,nosuid,nodev,size=32m
