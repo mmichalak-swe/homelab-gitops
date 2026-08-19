@@ -37,7 +37,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: speedtest
-    image: linuxserver/speedtest-tracker:1.14.7@sha256:31aa3b5db19ec05f392ed53e26ebb06b73e88e1c915a2799d30d436ef4376041
+    image: linuxserver/speedtest-tracker:1.14.8@sha256:4829a2ea61edd50370adc58050e6fbb93c96ed0c5d0215673b41df8347c9b2a2
     networks:
       caddy-net:
         ipv4_address: 172.19.0.24
