@@ -57,6 +57,7 @@ services:
       - ALL
     container_name: portainer-socket-proxy
     environment:
+      - ALLOW_LOGS=1
       - AUTH=0
       - BUILD=0
       - COMMIT=0
@@ -68,7 +69,7 @@ services:
       - EXEC=0
       - IMAGES=1
       - INFO=1
-      - LOG_LEVEL=notice
+      - LOG_LEVEL=info
       - NETWORKS=1
       - NODES=0
       - PING=1
