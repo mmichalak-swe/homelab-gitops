@@ -10,7 +10,6 @@ locals {
       name                      = "beszel"
       host                      = "6194cicero-raspberrypi"
       file_path_in_repository   = "hosts/6194cicero-raspberrypi/beszel/compose.yml"
-      repository_reference_name = lookup(var.stack_repository_reference_names, "6194cicero-raspberrypi/beszel", var.repository_reference_name)
     }
 
     "6194cicero-raspberrypi/caddy" = {
