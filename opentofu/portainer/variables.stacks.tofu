@@ -31,6 +31,7 @@ variable "stack_env" {
   sensitive   = true
 
   default = {
+    "6194cicero-gmk-g3/beszel"            = {}
     "6194cicero-gmk-g3/caddy"             = {}
     "6194cicero-gmk-g3/nebula-sync"       = {}
     "6194cicero-gmk-g3/pairdrop"          = {}
@@ -38,6 +39,7 @@ variable "stack_env" {
     "6194cicero-gmk-g3/speedtest"         = {}
     "6194cicero-gmk-g3/volume-backup"     = {}
     "6194cicero-raspberrypi/authelia"     = {}
+    "6194cicero-raspberrypi/beszel"       = {}
     "6194cicero-raspberrypi/caddy"        = {}
     "6194cicero-raspberrypi/homer"        = {}
     "6194cicero-raspberrypi/monitoring"   = {}

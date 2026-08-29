@@ -98,6 +98,7 @@ variable "infisical_stack_env_stack_keys" {
   description = "Stack keys to fetch from Infisical. Override this if only a subset has folders in Infisical."
   type        = set(string)
   default = [
+    "6194cicero-gmk-g3/beszel",
     "6194cicero-gmk-g3/caddy",
     "6194cicero-gmk-g3/nebula-sync",
     "6194cicero-gmk-g3/pairdrop",
@@ -105,6 +106,7 @@ variable "infisical_stack_env_stack_keys" {
     "6194cicero-gmk-g3/speedtest",
     "6194cicero-gmk-g3/volume-backup",
     "6194cicero-raspberrypi/authelia",
+    "6194cicero-raspberrypi/beszel",
     "6194cicero-raspberrypi/caddy",
     "6194cicero-raspberrypi/homer",
     "6194cicero-raspberrypi/monitoring",

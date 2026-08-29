@@ -1,0 +1,117 @@
+networks:
+  beszel-net:
+    driver: bridge
+    ipam:
+      config:
+        - gateway: 172.18.4.1
+          ip_range: 172.18.4.0/25
+          subnet: 172.18.4.0/25
+    name: beszel_net
+  socket-proxy-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - gateway: 172.18.4.129
+          ip_range: 172.18.4.128/25
+          subnet: 172.18.4.128/25
+    name: beszel_socket_proxy_net
+
+services:
+  beszel-agent:
+    cap_drop:
+      - ALL
+    container_name: beszel-agent
+    depends_on:
+      beszel-socket-proxy:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    environment:
+      - DISABLE_SSH=true
+      - DOCKER_HOST=tcp://beszel-socket-proxy:2375
+      - HUB_URL=${HUB_URL}
+      - KEY=${KEY}
+      - TOKEN=${TOKEN}
+    hostname: beszel-agent
+    image: henrygd/beszel-agent:0.18.8@sha256:3b1939746690e423072b4a99bf4c4af6dd9562a68978a33738a3c4a4cc000c39
+    networks:
+      beszel-net:
+      socket-proxy-net:
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777,noexec,nosuid,nodev,size=64m
+    user: "1100:1100"
+    volumes:
+      - agent-data:/var/lib/beszel-agent
+
+  beszel-socket-proxy:
+    cap_drop:
+      - ALL
+    container_name: beszel-socket-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    environment:
+      - ALLOW_LOGS=0
+      - ALLOW_PAUSE=0
+      - ALLOW_RESTARTS=0
+      - ALLOW_START=0
+      - ALLOW_STOP=0
+      - ALLOW_UNPAUSE=0
+      - AUTH=0
+      - BUILD=0
+      - COMMIT=0
+      - CONFIGS=0
+      - CONTAINERS=1
+      - DISABLE_IPV6=0
+      - DISTRIBUTION=0
+      - EVENTS=0
+      - EXEC=0
+      - IMAGES=0
+      - INFO=1
+      - LOG_LEVEL=info
+      - NETWORKS=0
+      - NODES=0
+      - PING=0
+      - PLUGINS=0
+      - POST=0
+      - SECRETS=0
+      - SERVICES=0
+      - SESSION=0
+      - SOCKET_PATH=/var/run/docker.sock
+      - SWARM=0
+      - SYSTEM=0
+      - TASKS=0
+      - TZ=${TZ}
+      - VERSION=1
+      - VOLUMES=0
+    expose:
+      - 2375
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:2375/info || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    hostname: beszel-socket-proxy
+    image: linuxserver/socket-proxy:3.4.3@sha256:165670d41ce04c44c271075e4be87f6de17633478eae817ed967d71755de650b
+    networks:
+      socket-proxy-net:
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /run:exec
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  agent-data:

@@ -6,6 +6,12 @@ locals {
       file_path_in_repository = "hosts/6194cicero-gmk-g3/actual-budget/compose.yml"
     }
 
+    "6194cicero-gmk-g3/beszel" = {
+      name                      = "beszel"
+      host                      = "6194cicero-gmk-g3"
+      file_path_in_repository   = "hosts/6194cicero-gmk-g3/beszel/compose.yml"
+    }
+
     "6194cicero-gmk-g3/caddy" = {
       name                    = "caddy"
       host                    = "6194cicero-gmk-g3"

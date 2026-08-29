@@ -6,6 +6,12 @@ locals {
       file_path_in_repository = "hosts/6194cicero-raspberrypi/authelia/compose.yml"
     }
 
+    "6194cicero-raspberrypi/beszel" = {
+      name                      = "beszel"
+      host                      = "6194cicero-raspberrypi"
+      file_path_in_repository   = "hosts/6194cicero-raspberrypi/beszel/compose.yml"
+    }
+
     "6194cicero-raspberrypi/caddy" = {
       name                    = "caddy"
       host                    = "6194cicero-raspberrypi"
