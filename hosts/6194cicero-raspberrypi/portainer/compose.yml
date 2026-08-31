@@ -94,7 +94,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: portainer-socket-proxy
-    image: linuxserver/socket-proxy:3.4.3@sha256:5907a638bb14ee873500f6161dd3aaa4d9b3e67a35912db8c9995e134d990ec0
+    image: linuxserver/socket-proxy:3.4.4@sha256:cba12c42b1df30a6446856028f5ab726e9d8921f1ea74be509216c5e41357d42
     networks:
       proxy-net:
     read_only: true
