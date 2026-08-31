@@ -101,7 +101,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: beszel-socket-proxy
-    image: linuxserver/socket-proxy:3.4.3@sha256:165670d41ce04c44c271075e4be87f6de17633478eae817ed967d71755de650b
+    image: linuxserver/socket-proxy:3.4.4@sha256:cba12c42b1df30a6446856028f5ab726e9d8921f1ea74be509216c5e41357d42
     networks:
       socket-proxy-net:
     read_only: true
