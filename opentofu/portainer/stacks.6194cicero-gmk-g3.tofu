@@ -24,6 +24,12 @@ locals {
       file_path_in_repository = "hosts/6194cicero-gmk-g3/drawio/compose.yml"
     }
 
+    "6194cicero-gmk-g3/home-assistant" = {
+      name                     = "home-assistant"
+      host                     = "6194cicero-gmk-g3"
+      file_path_in_repository  = "hosts/6194cicero-gmk-g3/home-assistant/compose.yml"
+    }
+
     "6194cicero-gmk-g3/nebula-sync" = {
       name                    = "nebula-sync"
       host                    = "6194cicero-gmk-g3"

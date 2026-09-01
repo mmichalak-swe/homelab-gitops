@@ -100,6 +100,7 @@ variable "infisical_stack_env_stack_keys" {
   default = [
     "6194cicero-gmk-g3/beszel",
     "6194cicero-gmk-g3/caddy",
+    "6194cicero-gmk-g3/home-assistant",
     "6194cicero-gmk-g3/nebula-sync",
     "6194cicero-gmk-g3/pairdrop",
     "6194cicero-gmk-g3/pihole",
