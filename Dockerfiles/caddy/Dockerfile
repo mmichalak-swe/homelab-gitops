@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # build-image: caddy
 # build-tag-suffix: -alpine-custom-porkbun
-FROM --platform=$BUILDPLATFORM caddy:2.11.4-builder-alpine@sha256:8e89605351333ad2cc2f3bcc95275a2ccc427f88914050e86a5fde0fd77a63c4 AS builder
+FROM --platform=$BUILDPLATFORM caddy:2.11.4-builder-alpine@sha256:1a1689db91cfb390b2d856a1b3774e796852822cd723fa54c475b272f82bb4b7 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod \
