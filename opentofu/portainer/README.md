@@ -10,13 +10,11 @@ This directory is one OpenTofu root. Files are split by concern for readability:
 versions.tofu
 providers.tofu
 
-variables.aws.tofu
 variables.infisical.tofu
 variables.portainer.tofu
 variables.registries.tofu
 variables.stacks.tofu
 
-state_bucket.tofu
 infisical.portainer.tofu
 infisical.registries.tofu
 infisical.stack-env.tofu
@@ -31,12 +29,23 @@ outputs.tofu
 
 To add another stack, add an entry to the matching host file. The shared module block in `stacks.tofu` will pick it up through `local.stacks`.
 
+The disabled `6194cicero-gmk-g3/volume-backup` entry is an explicit exception:
+its Compose file currently exists only on the per-stack branch configured in
+local tfvars. Remove that declaration when the experiment is retired, or move
+the Compose file onto the default branch before removing its reference
+override.
+
 ## Configure
 
-Copy the example values into a local ignored file and fill in your repository and Infisical bootstrap settings:
+Run commands in this README from the repository root. Copy the example values
+into a local ignored file and fill in your repository and Infisical bootstrap
+settings:
 
 ```shell
-cp terraform.tfvars.example local.auto.tfvars
+cp \
+  opentofu/portainer/terraform.tfvars.example \
+  opentofu/portainer/local.auto.tfvars
+chmod 600 opentofu/portainer/local.auto.tfvars
 ```
 
 Recommended `local.auto.tfvars` contents:
@@ -61,10 +70,9 @@ infisical_dockerhub_registry_tokens_enabled = true
 
 Keep these in local tfvars:
 
-- AWS settings: `aws_region`, `state_bucket_name`, and optional `state_bucket_tags`
 - Infisical bootstrap/auth values: `infisical_project_id`, `infisical_env_slug`, `infisical_auth`, and optional `infisical_host`
 - Repository settings: `repository_url`, `repository_reference_name`, and any stack-specific reference overrides
-- Non-secret Portainer object shape: `dockerhub_registries`, Git credential IDs, and stack behavior toggles
+- Non-secret Portainer object shape: `dockerhub_registries`, Portainer Source IDs, and stack behavior toggles
 - Temporary local fallback values in `stack_env` or `dockerhub_registry_tokens` only while actively testing
 
 Move these out of local tfvars after they exist in Infisical:
@@ -74,7 +82,8 @@ Move these out of local tfvars after they exist in Infisical:
 
 If you are not using Infisical for the Portainer provider yet, local `portainer_endpoint` and `portainer_api_key` still work.
 
-If the actual Portainer environment name differs from the repo host key and you are not storing the map in Infisical, update:
+If the actual Portainer environment name differs from the repo host key, set the
+mapping in local tfvars:
 
 ```hcl
 portainer_environment_names = {
@@ -83,137 +92,30 @@ portainer_environment_names = {
 }
 ```
 
-If the existing stack uses a saved Portainer Git credential, set:
+If an existing stack uses a saved Portainer Git source, set:
 
 ```hcl
 git_repository_authentication = true
-repository_git_credential_id  = 1
+repository_source_id          = 1
 ```
 
 ## AWS S3 State Backend
 
 This root stores state at `s3://<bucket>/portainer/terraform.tfstate` and uses
-OpenTofu's native S3 lock file. The bucket and region are supplied as partial
-backend configuration so credentials and deployment-specific values are not
-committed.
+OpenTofu's native S3 lock file. Bucket ownership and bucket-wide settings now
+belong to the separate `opentofu/bootstrap/state-backend` root.
 
-The same root manages its backend bucket. The bucket resource has
-`prevent_destroy = true`, versioning, SSE-S3 encryption, bucket-owner-enforced
-ownership, all bucket-level public access blocks enabled, and lifecycle
-retention for five state snapshots. Before deleting or replacing this bucket,
-migrate the state to another backend.
+The bucket and region come from the repository-wide committed, non-secret partial backend
+configuration at `opentofu/backends/homelab.s3.tfbackend`. Backend blocks cannot use
+ordinary input variables or outputs, so each root supplies its own committed
+state key and shares this partial configuration. AWS credentials are resolved
+from the AWS CLI configuration or environment and are never stored in this file.
 
-The lifecycle rule retains the current state object and its four newest
-noncurrent versions. Older noncurrent versions become eligible for permanent
-deletion after one day. S3 requires a positive noncurrent age, so more than five
-versions can exist temporarily. The rule's prefix also covers old
-`terraform.tfstate.tflock` versions created by native S3 state locking.
-
-### One-time migration and import
-
-1. In AWS, manually create a globally unique S3 bucket. Create it in the region
-   you intend to use and enable:
-
-   - Bucket versioning
-   - SSE-S3 (`AES256`) default encryption
-   - Bucket owner enforced object ownership
-   - All four Block Public Access settings
-
-   Do not upload a state file or create a lifecycle rule manually. OpenTofu will
-   create the lifecycle rule after the bucket settings are imported.
-
-2. Authenticate to AWS with the profile or environment used by both OpenTofu's
-   S3 backend and AWS provider. Do not put AWS credentials in either backend
-   configuration or tfvars. For example:
-
-   ```shell
-   export AWS_PROFILE=homelab
-   aws sts get-caller-identity
-   ```
-
-3. From `opentofu/portainer`, create the ignored partial backend configuration:
-
-   ```shell
-   cp backend.s3.tfbackend.example backend.s3.tfbackend
-   ```
-
-   Replace the example bucket and region in `backend.s3.tfbackend`. Add the same
-   values to the existing ignored `local.auto.tfvars`:
-
-   ```hcl
-   aws_region        = "aws-region"
-   state_bucket_name = "replace-with-your-globally-unique-bucket-name"
-   ```
-
-   The backend file and provider variables are separate because backend blocks
-   cannot refer to input variables.
-
-4. Make a protected backup copy of the existing local `terraform.tfstate`
-   outside this repository. State contains secrets; do not commit or share the
-   backup.
-
-5. Migrate the complete existing state to S3:
-
-   ```shell
-   tofu init -migrate-state -backend-config=backend.s3.tfbackend
-   ```
-
-   Review the source and destination in OpenTofu's prompt before confirming the
-   migration. Do not run `tofu import` before this step.
-
-6. Verify that OpenTofu can read the migrated state and that the S3 object
-   exists:
-
-   ```shell
-   tofu state list
-   aws s3api head-object \
-     --bucket replace-with-your-globally-unique-bucket-name \
-     --key portainer/terraform.tfstate
-   ```
-
-7. Import the manually configured bucket and each existing bucket setting into
-   the now-remote state:
-
-   ```shell
-   tofu import aws_s3_bucket.portainer_state replace-with-your-globally-unique-bucket-name
-   tofu import aws_s3_bucket_ownership_controls.portainer_state replace-with-your-globally-unique-bucket-name
-   tofu import aws_s3_bucket_public_access_block.portainer_state replace-with-your-globally-unique-bucket-name
-   tofu import aws_s3_bucket_server_side_encryption_configuration.portainer_state replace-with-your-globally-unique-bucket-name
-   tofu import aws_s3_bucket_versioning.portainer_state replace-with-your-globally-unique-bucket-name
-   ```
-
-   If a setting was not created manually, its import will report that no remote
-   object exists. Leave that resource unimported; the next plan will propose
-   creating the missing setting. If you already created a lifecycle
-   configuration manually, import it as well:
-
-   ```shell
-   tofu import aws_s3_bucket_lifecycle_configuration.portainer_state replace-with-your-globally-unique-bucket-name
-   ```
-
-   An S3 bucket has one lifecycle configuration. Importing or applying this
-   resource makes OpenTofu authoritative for the bucket's complete lifecycle
-   rule set.
-
-8. Review the result:
-
-   ```shell
-   tofu plan
-   ```
-
-   Expect only intentional differences such as the configured tags or a
-   manually omitted bucket setting. Apply only after the plan is understood.
-
-The AWS identity used by the backend needs `s3:ListBucket` on the bucket and
-`s3:GetObject`, `s3:PutObject`, and `s3:DeleteObject` on both
-`portainer/terraform.tfstate` and `portainer/terraform.tfstate.tflock`. Managing
-the bucket resources also requires the corresponding S3 configuration and
-tagging permissions.
-
-For later backend configuration changes, rerun:
+From the repository root, initialize or reconfigure this root with:
 
 ```shell
-tofu init -reconfigure -backend-config=backend.s3.tfbackend
+just init portainer
+just reconfigure portainer
 ```
 
 ## Infisical Provider Config
@@ -239,7 +141,8 @@ infisical_portainer_config_enabled = true
 ```
 
 Infisical values override matching local variables.
-Local variables remain useful as fallbacks while migrating.
+Local variables remain available as explicit fallbacks when Infisical-backed
+configuration is disabled.
 
 ## Infisical Stack Env
 
@@ -311,22 +214,25 @@ When Infisical is enabled, Infisical values override matching keys from `dockerh
 Registry PATs are still stored in OpenTofu state and Portainer registry configuration, so protect the state backend.
 
 Each registry entry must include Portainer's registry `type`; Docker Hub is `6`.
+Set `authentication = true` when supplying a Docker Hub username and token.
 The registry map key must exist either in Infisical or in `dockerhub_registry_tokens`.
 
 ```hcl
 dockerhub_registries = {
   dockerhub_personal = {
-    name     = "Docker Hub - Primary"
-    type     = 6
-    url      = "docker.io"
-    username = "dockerhub-user"
+    authentication = true
+    name           = "Docker Hub - Primary"
+    type           = 6
+    url            = "docker.io"
+    username       = "dockerhub-user"
   }
 
   dockerhub_dhi = {
-    name     = "Docker Hub - DHI"
-    type     = 6
-    url      = "your-dhi-registry-url"
-    username = "dockerhub-user"
+    authentication = true
+    name           = "Docker Hub - DHI"
+    type           = 6
+    url            = "your-dhi-registry-url"
+    username       = "dockerhub-user"
   }
 }
 ```
@@ -334,37 +240,34 @@ dockerhub_registries = {
 If importing existing registries, use the registry ID from Portainer:
 
 ```shell
-tofu import 'portainer_registry.dockerhub["dockerhub_personal"]' <REGISTRY_ID>
-tofu import 'portainer_registry.dockerhub["dockerhub_dhi"]' <REGISTRY_ID>
+tofu -chdir=opentofu/portainer import 'portainer_registry.dockerhub["dockerhub_personal"]' '<REGISTRY_ID>'
+tofu -chdir=opentofu/portainer import 'portainer_registry.dockerhub["dockerhub_dhi"]' '<REGISTRY_ID>'
 ```
 
 ## Import existing stacks
 
-Initialize the provider:
+From the repository root, initialize the root with its shared backend
+configuration:
 
 ```shell
-tofu init
+just init portainer
 ```
 
-Find the existing stack ID and endpoint ID in Portainer, then import it.
-The Portainer provider expects this import ID format:
-
-```text
-<endpoint_id>-<stack_id>-<deployment_type>[-<method>]
-```
+Find the existing numeric stack ID in Portainer, then import it. Portainer
+provider 1.34.3 expects only that numeric ID.
 
 ### Example - Draw.io
 
-For Draw.io on `6194cicero-gmk-g3`, using endpoint ID `5`, stack ID `52`, standalone deployment, and Git repository mode:
+For Draw.io on `6194cicero-gmk-g3`, using stack ID `52`:
 
 ```shell
-tofu import 'module.stack["6194cicero-gmk-g3/drawio"].portainer_stack.this' '5-52-standalone-repository'
+tofu -chdir=opentofu/portainer import 'module.stack["6194cicero-gmk-g3/drawio"].portainer_stack.this' 52
 ```
 
 Check drift before applying:
 
 ```shell
-tofu plan
+just plan portainer
 ```
 
 If the plan wants to change repository settings, Git credentials, webhook settings, polling interval, ownership, `pull_image`, or `prune`, adjust the OpenTofu inputs to match the existing Portainer stack before applying.

@@ -1,19 +1,11 @@
-aws_region        = "aws-region"
-state_bucket_name = "replace-with-your-globally-unique-bucket-name"
-
-# Optional tags for the state bucket.
-# state_bucket_tags = {
-#   Environment = "homelab"
-# }
-
 repository_url            = "https://github.com/user/project.git"
 repository_reference_name = "refs/heads/main"
 
-infisical_project_id                         = "your-infisical-project-id"
-infisical_env_slug                           = "prod"
-infisical_portainer_config_enabled           = true
-infisical_stack_env_enabled                  = true
-infisical_dockerhub_registry_tokens_enabled  = true
+infisical_project_id                        = "your-infisical-project-id"
+infisical_env_slug                          = "prod"
+infisical_portainer_config_enabled          = true
+infisical_stack_env_enabled                 = true
+infisical_dockerhub_registry_tokens_enabled = true
 
 # Leave unset for Infisical Cloud. Set only for self-hosted Infisical.
 # infisical_host = "https://infisical.example.com"
@@ -37,13 +29,18 @@ infisical_dockerhub_registry_tokens_enabled  = true
 #   }
 # }
 
+# The disabled volume-backup experiment reads its Compose file from a
+# non-default branch because that file is not present on main. Remove the stack
+# declaration when the experiment is retired, or move its Compose file to main
+# and remove this override.
 stack_repository_reference_names = {
   "6194cicero-gmk-g3/volume-backup" = "refs/heads/add-docker-volume-backup-test-tzdata"
 }
 
 dockerhub_registries = {
   dockerhub_personal = {
-    name     = "Docker Hub - Primary"
+    authentication = true
+    name           = "Docker Hub - Primary"
     # Portainer registry type 6 is Docker Hub.
     type     = 6
     url      = "docker.io"
@@ -51,7 +48,8 @@ dockerhub_registries = {
   }
 
   dockerhub_dhi = {
-    name     = "Docker Hub - DHI"
+    authentication = true
+    name           = "Docker Hub - DHI"
     # Portainer registry type 6 is Docker Hub.
     type     = 6
     url      = "your-dhi-registry-url"
@@ -72,7 +70,7 @@ portainer_environment_names = {
 
 # If this repository is private, set these to match the existing Portainer stack.
 # git_repository_authentication = true
-# repository_git_credential_id  = 1
+# repository_source_id          = 1
 
 # Optional local fallback values. When infisical_stack_env_enabled is true,
 # Infisical secrets from /hosts/<host>/<app> override this map.
@@ -140,9 +138,9 @@ stack_env = {
 
   "6194cicero-raspberrypi/authelia" = {
     AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE = ""
-    AUTHELIA_SESSION_SECRET_FILE                               = ""
-    AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE                       = ""
-    TZ                                                         = "America/New_York"
+    AUTHELIA_SESSION_SECRET_FILE                                = ""
+    AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE                        = ""
+    TZ                                                          = "America/New_York"
   }
 
   "6194cicero-raspberrypi/caddy" = {

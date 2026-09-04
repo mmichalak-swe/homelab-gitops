@@ -7,9 +7,9 @@ locals {
     }
 
     "6194cicero-gmk-g3/beszel" = {
-      name                      = "beszel"
-      host                      = "6194cicero-gmk-g3"
-      file_path_in_repository   = "hosts/6194cicero-gmk-g3/beszel/compose.yml"
+      name                    = "beszel"
+      host                    = "6194cicero-gmk-g3"
+      file_path_in_repository = "hosts/6194cicero-gmk-g3/beszel/compose.yml"
     }
 
     "6194cicero-gmk-g3/caddy" = {
@@ -25,9 +25,9 @@ locals {
     }
 
     "6194cicero-gmk-g3/home-assistant" = {
-      name                     = "home-assistant"
-      host                     = "6194cicero-gmk-g3"
-      file_path_in_repository  = "hosts/6194cicero-gmk-g3/home-assistant/compose.yml"
+      name                    = "home-assistant"
+      host                    = "6194cicero-gmk-g3"
+      file_path_in_repository = "hosts/6194cicero-gmk-g3/home-assistant/compose.yml"
     }
 
     "6194cicero-gmk-g3/nebula-sync" = {

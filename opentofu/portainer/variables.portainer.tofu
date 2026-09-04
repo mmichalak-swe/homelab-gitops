@@ -63,8 +63,8 @@ variable "git_repository_authentication" {
   default     = false
 }
 
-variable "repository_git_credential_id" {
-  description = "Existing Portainer Git credential ID to use for repository authentication."
+variable "repository_source_id" {
+  description = "Existing Portainer Source ID to use for repository authentication."
   type        = number
   default     = null
 }

@@ -1,0 +1,2 @@
+bucket = "homelab-gitops-portainer-opentofu-state-us-east-1-7f3a9c2d"
+region = "us-east-1"
