@@ -12,11 +12,6 @@ terraform {
   }
 
   required_providers {
-    aws = {
-      source  = "registry.opentofu.org/hashicorp/aws"
-      version = "6.62.0"
-    }
-
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"
       version = "0.19.30"

@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.aws_region
-}
-
 provider "portainer" {
   endpoint        = local.portainer_endpoint
   api_key         = local.portainer_api_key

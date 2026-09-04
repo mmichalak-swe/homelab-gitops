@@ -10,6 +10,9 @@ OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, regis
 ## Important Directories
 
 - `hosts/`: per-host Docker Compose stacks.
+- `opentofu/aws/iam-roles-anywhere/`: IAM Roles Anywhere trust anchor, profiles, and roles.
+- `opentofu/bootstrap/state-backend/`: shared S3 state-bucket ownership and settings.
+- `opentofu/backends/`: committed, non-secret partial backend configuration.
 - `opentofu/portainer/`: OpenTofu root for Portainer-managed resources.
 - `opentofu/modules/portainer-stack/`: shared stack module.
 - `templates/portainer/`: Portainer custom template sources.
@@ -32,7 +35,7 @@ OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, regis
 When adding or changing a Compose stack:
 
 1. Edit the stack file under `hosts/<host>/<app>/compose.yml`.
-2. Ensure the matching stack entry exists in `opentofu/portainer/stacks.<host>.tf`.
+2. Ensure the matching stack entry exists in `opentofu/portainer/stacks.<host>.tofu`.
 3. Keep `file_path_in_repository` aligned with the actual Compose path.
 4. Use environment variable references for secrets instead of literal secret values.
 5. Prefer explicit resource limits, `restart: unless-stopped`, and `security_opt: no-new-privileges:true` when compatible.
@@ -40,20 +43,22 @@ When adding or changing a Compose stack:
 
 ## OpenTofu Guidance
 
-Work from `opentofu/portainer` for Portainer infrastructure.
+Run the repository `Justfile` from the repository root. Initialize a root before
+validating or planning it.
 
 Useful validation commands:
 
 ```shell
-cd opentofu/portainer
-tofu fmt -check -recursive
-tofu validate
-tofu plan
+just fmt
+just init portainer
+just validate portainer
+just plan portainer
 ```
 
 Notes:
 
-- `tofu validate` and `tofu plan` may require local provider configuration and Infisical/Portainer credentials.
+- `just validate` and `just plan` may require local provider configuration and Infisical/Portainer credentials.
+- `just fmt` checks tracked and unignored OpenTofu files without reading ignored local tfvars.
 - If validation fails because local secrets or provider auth are unavailable, report that clearly instead of inventing values.
 - Use `opentofu/portainer/terraform.tfvars.example` for documented variable shape only; do not modify ignored local tfvars files unless explicitly asked.
 
@@ -71,14 +76,10 @@ If required environment variables are unavailable locally, report the limitation
 
 Renovate watches:
 
-- `.github/**`
+- `.github/workflows/**`
 - `hosts/*/*/compose.yml`
-- `hosts/*/*/compose.yaml`
 - `Dockerfiles/*/Dockerfile`
-- `opentofu/**/versions.tf`
 - `opentofu/**/versions.tofu`
-
-The Caddy stacks under `hosts/**/caddy/**` are intentionally ignored by Renovate. Do not remove that ignore rule unless requested.
 
 Dependency-bot PRs can trigger Trivy scans for changed Compose images. Keep labels and workflow assumptions intact when editing `.github/workflows`.
 

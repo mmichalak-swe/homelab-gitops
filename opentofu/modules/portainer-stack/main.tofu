@@ -17,7 +17,7 @@ resource "portainer_stack" "this" {
   ownership                     = var.ownership
   prune                         = var.prune
   pull_image                    = var.pull_image
-  repository_git_credential_id  = var.repository_git_credential_id
+  source_id                     = var.source_id
   stack_webhook                 = var.stack_webhook
   support_relative_path         = var.support_relative_path
   tlsskip_verify                = var.tlsskip_verify

@@ -7,9 +7,9 @@ locals {
     }
 
     "6194cicero-raspberrypi/beszel" = {
-      name                      = "beszel"
-      host                      = "6194cicero-raspberrypi"
-      file_path_in_repository   = "hosts/6194cicero-raspberrypi/beszel/compose.yml"
+      name                    = "beszel"
+      host                    = "6194cicero-raspberrypi"
+      file_path_in_repository = "hosts/6194cicero-raspberrypi/beszel/compose.yml"
     }
 
     "6194cicero-raspberrypi/caddy" = {

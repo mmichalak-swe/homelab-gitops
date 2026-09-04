@@ -24,3 +24,7 @@ tofu.rc
 
 !**/*.tfvars.example
 !**/*.tfbackend.example
+!opentofu/backends/homelab.s3.tfbackend
+
+opentofu/aws/iam-roles-anywhere/*.key.pem
+opentofu/aws/iam-roles-anywhere/*.cert.pem

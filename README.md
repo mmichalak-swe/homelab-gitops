@@ -14,6 +14,7 @@ The goal is a lightweight GitOps workflow without Kubernetes: changes are review
 
 ```text
 .
+├── Justfile                           # Short commands for each OpenTofu root
 ├── hosts/
 │   ├── <host>/
 │   │   ├── <app>/compose.yml        # Per-host Docker Compose stacks
@@ -21,13 +22,20 @@ The goal is a lightweight GitOps workflow without Kubernetes: changes are review
 │   ├── 6194cicero-gmk-g3/
 │   └── 6194cicero-raspberrypi/
 ├── opentofu/
-│   ├── portainer/                   # OpenTofu root for Portainer-managed objects
-│   └── modules/
-│       └── portainer-stack/         # Shared Portainer stack module
+│   ├── aws/
+│   │   └── iam-roles-anywhere/      # AWS trust anchor, roles, profiles, and root CA certificate
+│   ├── backends/
+│   │   └── homelab.s3.tfbackend     # Shared non-secret backend configuration
+│   ├── bootstrap/
+│   │   └── state-backend/           # Shared OpenTofu state bucket
+│   ├── modules/
+│   │   └── portainer-stack/         # Shared Portainer stack module
+│   └── portainer/                   # OpenTofu root for Portainer-managed objects
 ├── templates/
 │   └── portainer/                   # Portainer custom template sources
 ├── Dockerfiles/
-│   └── caddy/                       # Custom image definitions
+│   ├── caddy/                       # Custom Caddy image
+│   └── drawio/                      # Custom Draw.io image
 ├── ansible/
 │   └── rpi-initial-config.yml       # Initial Raspberry Pi host setup
 └── .github/
@@ -60,24 +68,54 @@ opentofu/modules/portainer-stack/
 
 ## OpenTofu
 
+### Prerequisites
+
+Install OpenTofu and `just`. AWS roots also require AWS CLI credentials with
+access to the shared state bucket and the resources managed by the selected
+root. The IAM Roles Anywhere client workflow additionally uses OpenSSL, `jq`,
+and the AWS IAM Roles Anywhere credential helper.
+
 ### Operations
 
-Detailed Portainer/OpenTofu setup and migration notes live in:
+Detailed setup and operation notes live in:
 
 ```text
 opentofu/portainer/README.md
+opentofu/aws/iam-roles-anywhere/README.md
+opentofu/bootstrap/state-backend/README.md
 ```
 
 Typical workflow:
 
 ```shell
-cd opentofu/portainer
-tofu init
-tofu plan
-tofu apply
+just init portainer
+just plan portainer
+just apply portainer
 ```
 
+The repository `Justfile` accepts these root paths:
+
+```text
+portainer
+aws/iam-roles-anywhere
+bootstrap/state-backend
+```
+
+All roots reuse the committed, non-secret backend configuration at
+`opentofu/backends/homelab.s3.tfbackend`. It contains only the state bucket name
+and AWS region; credentials must come from the AWS CLI configuration or
+environment. Each root's committed backend block selects its own state key.
+
 Use `opentofu/portainer/terraform.tfvars.example` as the starting point for local ignored configuration.
+
+AWS IAM Roles Anywhere has its own OpenTofu root and state under
+`opentofu/aws/iam-roles-anywhere/`. Its README documents local CA key handling,
+least-privilege role configuration, and initialization.
+
+The shared state bucket is managed independently under
+`opentofu/bootstrap/state-backend/`. All roots use the shared backend
+configuration for the bucket and region, while their committed backend blocks
+select distinct state object keys.
 
 ### Secrets
 
@@ -92,3 +130,9 @@ Primary Infisical paths:
 ```
 
 Local `*.tfvars` files are ignored and should only contain bootstrap values, local auth for OpenTofu runs, and temporary fallback values. Secrets still flow into OpenTofu state and Portainer configuration, so the state backend must be protected.
+
+The IAM Roles Anywhere root is an explicit local-only exception for its CA
+private key, as requested. Keep its ignored `local.auto.tfvars` at mode `0600`;
+because the key is consumed by the TLS provider, it also enters that root's
+encrypted remote state. Keep a protected offline backup of the key and secure
+the state bucket.

@@ -1,0 +1,49 @@
+# IAM Roles Anywhere is regional. Leave aws_region unset only when your AWS
+# profile or environment already selects the intended region.
+aws_region  = "us-east-1"
+name_prefix = "homelab"
+
+ca_common_name  = "Homelab IAM Roles Anywhere Root CA"
+ca_organization = "Homelab"
+
+# Generate a dedicated unencrypted RSA key, then paste its complete PEM value
+# into local.auto.tfvars. Never commit the populated local file.
+ca_private_key_pem = <<-EOT
+  -----BEGIN PRIVATE KEY-----
+  replace-with-a-locally-generated-ca-private-key
+  -----END PRIVATE KEY-----
+EOT
+
+# Each role gets a dedicated Roles Anywhere profile. Its client certificate
+# must use one of that role's exact Subject CN values. Both roles deliberately
+# grant no permissions until narrowly scoped policies are added.
+roles = {
+  s3-service-user = {
+    allowed_subject_common_names = ["s3-service-user"]
+    managed_policy_arns          = []
+    # permissions_boundary_arn   = "arn:aws:iam::123456789012:policy/homelab-boundary"
+
+    # inline_policy_json = <<-EOT
+    #   {
+    #     "Version": "2012-10-17",
+    #     "Statement": [{
+    #       "Sid": "AccessSpecificBucket",
+    #       "Effect": "Allow",
+    #       "Action": ["s3:GetObject"],
+    #       "Resource": ["arn:aws:s3:::replace-with-bucket-name/*"]
+    #     }]
+    #   }
+    # EOT
+  }
+
+  terraform-service-user = {
+    allowed_subject_common_names = ["terraform-service-user"]
+    managed_policy_arns          = []
+    # permissions_boundary_arn   = "arn:aws:iam::123456789012:policy/homelab-boundary"
+  }
+}
+
+tags = {
+  Environment = "homelab"
+  Purpose     = "IAM Roles Anywhere for homelab workloads"
+}

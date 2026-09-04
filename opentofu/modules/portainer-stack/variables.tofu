@@ -100,8 +100,8 @@ variable "pull_image" {
   default     = false
 }
 
-variable "repository_git_credential_id" {
-  description = "Existing Portainer Git credential ID to use for repository authentication."
+variable "source_id" {
+  description = "Existing Portainer Source ID to use for repository authentication."
   type        = number
   default     = null
 }
