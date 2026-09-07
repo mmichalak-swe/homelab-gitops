@@ -36,7 +36,7 @@ services:
     expose:
       - 8123
     hostname: home-assistant
-    image: linuxserver/homeassistant:2026.9.0@sha256:f5aa0e0d1397c68c3c231ebf4397e472ea6fc09cdbd3813aac1058f57c9c1dc7
+    image: linuxserver/homeassistant:2026.9.1@sha256:9275f3697e72d5ea042bc54663b848c4aae59596195eba396df3b37738123907
     networks:
       caddy-net:
         ipv4_address: 172.19.0.30
