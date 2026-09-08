@@ -7,9 +7,9 @@ networks:
     internal: true
     ipam:
       config:
-        - gateway: 172.19.1.1
-          ip_range: 172.19.1.0/24
-          subnet: 172.19.1.0/24
+        - gateway: 172.19.2.1
+          ip_range: 172.19.2.0/24
+          subnet: 172.19.2.0/24
     name: volume-backup_sp_net
 
 services:
