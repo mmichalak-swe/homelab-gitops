@@ -22,7 +22,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
     environment:
       - DNSMASQ_USER=${DNSMASQ_USER}
       - FTLCONF_dns_bogusPriv=${FTLCONF_dns_bogusPriv}

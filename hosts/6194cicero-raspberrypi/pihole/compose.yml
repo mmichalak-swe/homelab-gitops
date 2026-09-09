@@ -23,7 +23,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
     entrypoint: ["/startup/startup_wg.sh"]
     environment:
       - DNSMASQ_USER=${DNSMASQ_USER}
