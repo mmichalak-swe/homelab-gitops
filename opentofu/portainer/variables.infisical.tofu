@@ -98,6 +98,7 @@ variable "infisical_stack_env_stack_keys" {
   description = "Stack keys to fetch from Infisical. Override this if only a subset has folders in Infisical."
   type        = set(string)
   default = [
+    "6194cicero-gmk-g3/actual-budget",
     "6194cicero-gmk-g3/beszel",
     "6194cicero-gmk-g3/caddy",
     "6194cicero-gmk-g3/home-assistant",

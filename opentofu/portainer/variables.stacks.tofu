@@ -31,6 +31,7 @@ variable "stack_env" {
   sensitive   = true
 
   default = {
+    "6194cicero-gmk-g3/actual-budget"     = {}
     "6194cicero-gmk-g3/beszel"            = {}
     "6194cicero-gmk-g3/caddy"             = {}
     "6194cicero-gmk-g3/home-assistant"    = {}
