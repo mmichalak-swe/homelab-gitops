@@ -44,7 +44,6 @@ variable "stack_env" {
     "6194cicero-raspberrypi/beszel"       = {}
     "6194cicero-raspberrypi/caddy"        = {}
     "6194cicero-raspberrypi/homer"        = {}
-    "6194cicero-raspberrypi/monitoring"   = {}
     "6194cicero-raspberrypi/pihole"       = {}
     "6194cicero-raspberrypi/vaultwarden"  = {}
     "6194cicero-raspberrypi/wireguard-ls" = {}
