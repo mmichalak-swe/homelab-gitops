@@ -1,7 +1,7 @@
 # build-image: drawio
 # build-tag-suffix: -alpine-custom
 
-FROM alpine:3.24.2@sha256:31b6477333eb8257db9e5d7c3a7264fd0467928756f0bbcc27d35bea5d28cdbd AS alpine-base
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS alpine-base
 
 # build-version-source
 FROM jgraph/drawio:31.4.6@sha256:4bd19d4bc36b65cabf1ae9c5d234597e564416b6c67f7d4db296c2df758fcb52 AS upstream
