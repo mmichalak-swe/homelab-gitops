@@ -4,7 +4,7 @@
 FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS alpine-base
 
 # build-version-source
-FROM jgraph/drawio:31.4.6@sha256:4bd19d4bc36b65cabf1ae9c5d234597e564416b6c67f7d4db296c2df758fcb52 AS upstream
+FROM jgraph/drawio:31.4.6@sha256:139b43305b77c46575d5af5dcc7b6c38dc7ea22f430fdfe954fb8f96926643e5 AS upstream
 
 FROM alpine-base AS source
 
@@ -17,7 +17,7 @@ RUN rm -rf /src/WEB-INF /src/META-INF
 # not call draw.io's cloud integrations or external export service.
 COPY PreConfig.js /src/js/PreConfig.js
 
-FROM caddy:2.11.4-alpine@sha256:de23def33b17fb5d1290b0f6c2add1d70780e52341896c00a4c8a2a2fe9d355e AS caddy-source
+FROM caddy:2.11.4-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b AS caddy-source
 
 # A normal copy does not preserve Caddy's CAP_NET_BIND_SERVICE extended
 # attribute. Verify that the capability-free binary is safe to copy into the
