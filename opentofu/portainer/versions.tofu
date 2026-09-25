@@ -14,7 +14,7 @@ terraform {
   required_providers {
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"
-      version = "0.19.34"
+      version = "0.19.35"
     }
 
     portainer = {
