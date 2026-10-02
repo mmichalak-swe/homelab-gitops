@@ -43,7 +43,7 @@ services:
       retries: 3
       start_period: 10s
     hostname: wireguard-ls
-    image: linuxserver/wireguard:1.0.20260223@sha256:dca67384e3e9a5bcc288461fa983e6fcb0e248e5a2d8e5b3e5d3f753bfac3e35
+    image: linuxserver/wireguard:1.0.20260223@sha256:216ca1ce9da7bfe26fb752111d952487804bd18933bbd4794970d424bf8adfe9
     networks:
       wg-ls-net:
         ipv4_address: 172.18.10.2
