@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 5s
     hostname: drawio
-    image: ghcr.io/mmichalak-swe/homelab-gitops/drawio:31.6.1-alpine-custom@sha256:f42392b5794ec99b9120f728a1dee4613c1c40c128aeb222c784240475ff6b19
+    image: ghcr.io/mmichalak-swe/homelab-gitops/drawio:31.7.0-alpine-custom@sha256:c945077035fc56b6d24f576db0c80954680608bcb3725bc85022f221762f1ff2
     networks:
       caddy-net:
         ipv4_address: 172.19.0.22
