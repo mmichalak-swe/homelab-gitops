@@ -4,7 +4,7 @@
 FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS alpine-base
 
 # build-version-source
-FROM jgraph/drawio:32.5.5@sha256:16296fe9fd09eff92a3808cc674ce1883712c1b0bae5d48ccc30f9abf13c578b AS upstream
+FROM jgraph/drawio:32.6.1@sha256:3d0a5a5ffb4f76abcecd9d17ae1373e3eefd0db07b657c545637dc9c6a7412e1 AS upstream
 
 FROM alpine-base AS source
 
