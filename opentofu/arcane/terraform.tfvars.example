@@ -1,0 +1,42 @@
+repository_url       = "https://github.com/mmichalak-swe/homelab-gitops.git"
+infisical_project_id = "your-infisical-project-id"
+infisical_env_slug   = "prod"
+
+# Provider secrets are read from /opentofu/arcane in Infisical:
+# arcane_endpoint = https://<arcane-hostname>/api
+# arcane_api_key  = an API key created in the manually bootstrapped Arcane UI
+
+# For self-hosted Infisical only:
+# infisical_host = "https://infisical.example.com"
+
+# Keep credentials in an ignored local.auto.tfvars file for local runs.
+# infisical_auth = {
+#   universal = {
+#     client_id     = "..."
+#     client_secret = "..."
+#   }
+# }
+
+# Private HTTPS repository: store git_token in the same Infisical folder.
+# repository_auth_type = "token"
+# repository_username  = "your-github-user"
+# repository_credential_version = 1
+
+# Private SSH repository: use an SSH repository_url and store git_ssh_key
+# in the same Infisical folder, then set repository_auth_type = "ssh".
+
+repository_branch = "main"
+
+# Application definitions and commented examples live in:
+# stacks.6194cicero-raspberrypi.tofu
+# stacks.6194cicero-gmk-g3.tofu
+# Enable an existing Portainer application only after preparing its handover.
+# Optional compatibility input for additional stacks or full-entry overrides:
+gitops_stacks = {}
+
+# For each selected application, Infisical is enabled by default and reads
+# /hosts/<host>/<app> in infisical_env_slug. Optional per-stack overrides:
+# infisical_env_slug    = "dev"
+# infisical_folder_path = "/hosts/another-path"
+# Set infisical_enabled = false for applications without a secrets folder.
+# Non-secret fallback values can be supplied via stack_env = { "host/app" = {} }.

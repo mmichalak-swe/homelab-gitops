@@ -6,6 +6,10 @@ This repo is the source of truth for a Docker Compose homelab managed through Po
 
 Portainer deploys Git-backed stacks from `hosts/<host>/<app>/compose.yml`.
 OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, registries, custom templates, Git settings, and stack environment injection.
+Portainer and Arcane themselves are bootstrapped manually with Docker Compose.
+Do not register Arcane as a Portainer stack or as an Arcane GitOps project.
+`opentofu/arcane` manages Arcane settings, the Git repository and explicitly
+selected application GitOps syncs, with secrets from Infisical.
 
 ## Important Directories
 
@@ -14,6 +18,7 @@ OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, regis
 - `opentofu/bootstrap/state-backend/`: shared S3 state-bucket ownership and settings.
 - `opentofu/backends/`: committed, non-secret partial backend configuration.
 - `opentofu/portainer/`: OpenTofu root for Portainer-managed resources.
+- `opentofu/arcane/`: OpenTofu root for Arcane-managed application resources.
 - `opentofu/modules/portainer-stack/`: shared stack module.
 - `templates/portainer/`: Portainer custom template sources.
 - `Dockerfiles/`: custom image definitions.
@@ -35,8 +40,8 @@ OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, regis
 When adding or changing a Compose stack:
 
 1. Edit the stack file under `hosts/<host>/<app>/compose.yml`.
-2. Ensure the matching stack entry exists in `opentofu/portainer/stacks.<host>.tofu`.
-3. Keep `file_path_in_repository` aligned with the actual Compose path.
+2. For Portainer-managed applications, ensure the matching stack entry exists in `opentofu/portainer/stacks.<host>.tofu`. Manually bootstrapped managers are exceptions. Applications handed over to Arcane use `opentofu/arcane/stacks.<host>.tofu`; avoid management by both roots. Keep secrets in Infisical, not the committed inventories.
+3. Keep `file_path_in_repository` (Portainer) or `compose_path` (Arcane) aligned with the actual Compose path.
 4. Use environment variable references for secrets instead of literal secret values.
 5. Prefer explicit resource limits, `restart: unless-stopped`, and `security_opt: no-new-privileges:true` when compatible.
 6. Be careful with `container_name`; existing stacks use it, so preserve established naming unless intentionally changing it.

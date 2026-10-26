@@ -1,0 +1,120 @@
+networks:
+  caddy-net:
+    name: caddy-net
+    external: true
+  proxy-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - gateway: 172.18.5.1
+          ip_range: 172.18.5.0/24
+          subnet: 172.18.5.0/24
+    name: arcane_sp_net
+
+services:
+  arcane:
+    container_name: arcane
+    depends_on:
+      arcane-socket-proxy:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      - APP_URL=${APP_URL}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - DOCKER_HOST=${DOCKER_HOST}
+      - PROJECTS_DIRECTORY=${PROJECTS_DIRECTORY}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    expose:
+      - 3552
+    # ports:
+    #   - "3552:3552"
+    healthcheck:
+      test: ["CMD", "/app/arcane", "health", "--timeout", "2s"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    image: ghcr.io/getarcaneapp/manager:v2.16.1@sha256:e211067a6808c1598175141cd19c48eab874a24b5b649be3ddcb3894db7e73cd
+    networks:
+      caddy-net:
+        ipv4_address: 172.18.0.30
+      proxy-net:
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - arcane_data:/app/data
+      # Keep project paths identical on the host and in Arcane for bind mounts.
+      - type: bind
+        source: ${PROJECTS_DIRECTORY:?Set PROJECTS_DIRECTORY to an absolute host path}
+        target: ${PROJECTS_DIRECTORY:?Set PROJECTS_DIRECTORY to an absolute host path}
+        bind:
+          create_host_path: false
+
+  arcane-socket-proxy:
+    cap_drop:
+      - ALL
+    container_name: arcane-socket-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    environment:
+      - ALLOW_LOGS=1
+      - AUTH=1
+      - BUILD=0
+      - COMMIT=0
+      - CONFIGS=0
+      - CONTAINERS=1
+      - DISABLE_IPV6=0
+      - DISTRIBUTION=1
+      - EVENTS=1
+      - EXEC=1
+      - IMAGES=1
+      - INFO=1
+      - LOG_LEVEL=info
+      - NETWORKS=1
+      - NODES=0
+      - PING=1
+      - PLUGINS=0
+      - POST=1
+      - SECRETS=0
+      - SERVICES=0
+      - SESSION=0
+      - SOCKET_PATH=/var/run/docker.sock
+      - SWARM=0
+      - SYSTEM=1
+      - TASKS=0
+      - TZ=${TZ:-America/New_York}
+      - VERSION=1
+      - VOLUMES=1
+    expose:
+      - 2375
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:2375/_ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    hostname: arcane-socket-proxy
+    image: linuxserver/socket-proxy:3.4.6@sha256:362cadf55b3c7920189347d0f4d60b389e2f80e929581bf10793f2371aab41e5
+    networks:
+      - proxy-net
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /run:exec
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  arcane_data:
+    name: arcane_data

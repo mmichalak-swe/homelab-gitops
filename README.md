@@ -24,6 +24,7 @@ The goal is a lightweight GitOps workflow without Kubernetes: changes are review
 ├── opentofu/
 │   ├── aws/
 │   │   └── iam-roles-anywhere/      # AWS trust anchor, roles, profiles, and root CA certificate
+│   ├── arcane/                      # Arcane settings, Git repository and application GitOps syncs
 │   ├── backends/
 │   │   └── homelab.s3.tfbackend     # Shared non-secret backend configuration
 │   ├── bootstrap/
@@ -66,6 +67,18 @@ opentofu/portainer/stacks.tofu
 opentofu/modules/portainer-stack/
 ```
 
+Arcane is being introduced on rpi4 (`6194cicero-raspberrypi`). Its manager and
+socket proxy are bootstrapped manually with Docker Compose, just like Portainer.
+`opentofu/arcane` uses HellsCrimson's Terraform provider to configure the running
+manager, register this repository and manage application GitOps syncs. Existing
+application stacks remain with Portainer until explicitly handed over. Follow
+the [Arcane setup guide](opentofu/arcane/README.md) for Infisical values, bootstrap
+instructions and per-stack GitOps configuration.
+
+Arcane's host inventories live in `opentofu/arcane/stacks.<host>.tofu`, with a
+commented example for each host. `opentofu/arcane/stacks.tofu` merges them and
+applies shared defaults before creating GitOps syncs.
+
 ## OpenTofu
 
 ### Prerequisites
@@ -81,6 +94,7 @@ Detailed setup and operation notes live in:
 
 ```text
 opentofu/portainer/README.md
+opentofu/arcane/README.md
 opentofu/aws/iam-roles-anywhere/README.md
 opentofu/bootstrap/state-backend/README.md
 ```
@@ -97,6 +111,7 @@ The repository `Justfile` accepts these root paths:
 
 ```text
 portainer
+arcane
 aws/iam-roles-anywhere
 bootstrap/state-backend
 ```
@@ -119,17 +134,20 @@ select distinct state object keys.
 
 ### Secrets
 
-Infisical stores secrets used by the Portainer OpenTofu root and by Portainer stacks.
+Infisical stores provider credentials and application environment values for the
+Portainer and Arcane OpenTofu roots. Arcane's manually bootstrapped Compose
+deployment reads its environment separately, before the Arcane root is run.
 
 Primary Infisical paths:
 
 ```text
 /opentofu/portainer
 /opentofu/portainer/dockerhub-registry-tokens
+/opentofu/arcane
 /hosts/<host>/<app>
 ```
 
-Local `*.tfvars` files are ignored and should only contain bootstrap values, local auth for OpenTofu runs, and temporary fallback values. Secrets still flow into OpenTofu state and Portainer configuration, so the state backend must be protected.
+Local `*.tfvars` files are ignored and should only contain bootstrap values, local auth for OpenTofu runs, and temporary fallback values. Secrets still flow into OpenTofu state and the managers' configuration, so the state backend must be protected.
 
 The IAM Roles Anywhere root is an explicit local-only exception for its CA
 private key, as requested. Keep its ignored `local.auto.tfvars` at mode `0600`;
