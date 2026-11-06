@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # build-image: caddy
 # build-tag-suffix: -alpine-custom-porkbun
-FROM --platform=$BUILDPLATFORM caddy:2.11.7-builder-alpine@sha256:95a5e7e2692b5eb9545aadc5b90a39f6f509bee59c9508a493f83ee902eaef63 AS builder
+FROM --platform=$BUILDPLATFORM caddy:2.11.9-builder-alpine@sha256:7d56ec51429d46ff6495db1542cc20e0a4e1559e766b2f4fc48ae25eeca16167 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod \
@@ -10,6 +10,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     xcaddy build --with github.com/caddy-dns/porkbun
 
 # build-version-source
-FROM caddy:2.11.7-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
+FROM caddy:2.11.9-alpine@sha256:71d41fe4b1ae92a058abc87afe614178b996d8a6b96d0f4c71ae30606e5927e3
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 RUN apk add --no-cache curl
