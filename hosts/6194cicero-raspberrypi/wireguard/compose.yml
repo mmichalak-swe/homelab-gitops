@@ -52,7 +52,9 @@ services:
         ipv4_address: 172.18.0.6
         gw_priority: 0
     ports:
-      - ${SERVERPORT}:51820/udp
+      - target: 51820
+        published: "${SERVERPORT}"
+        protocol: udp
     read_only: true
     restart: unless-stopped
     security_opt:
