@@ -103,7 +103,7 @@ services:
       retries: 5
       start_period: 10s
     hostname: arcane-socket-proxy
-    image: linuxserver/socket-proxy:3.4.7@sha256:4e5e59efd3338205561c54262581992036e5a36ccca97d487b1d4ec41f9adc58
+    image: linuxserver/socket-proxy:3.4.7@sha256:18289eeb306e8e3b70901ffec23eafbb318d73b4514d0bd737dbfc7c5b4fe506
     networks:
       - proxy-net
     read_only: true
