@@ -14,12 +14,12 @@ terraform {
   required_providers {
     arcane = {
       source  = "registry.terraform.io/hellscrimson/arcane"
-      version = "1.5.0"
+      version = "1.6.0"
     }
 
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"
-      version = "0.20.5"
+      version = "0.20.15"
     }
   }
 }
