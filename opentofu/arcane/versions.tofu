@@ -19,7 +19,7 @@ terraform {
 
     infisical = {
       source  = "registry.opentofu.org/infisical/infisical"
-      version = "0.20.15"
+      version = "0.20.16"
     }
   }
 }
