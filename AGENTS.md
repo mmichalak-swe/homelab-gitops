@@ -6,10 +6,6 @@ This repo is the source of truth for a Docker Compose homelab managed through Ar
 
 Arcane deploys Git-backed projects from `hosts/<host>/<app>/compose.yml`.
 All applications, including Caddy and Pi-hole on both hosts, have migrated.
-Portainer's managed resources have been destroyed and its state is empty.
-Its OpenTofu root, module, template and bootstrap Compose file are removed.
-Remaining host teardown and access cleanup are documented in
-`docs/portainer-retirement.md`; do not recreate Portainer resources.
 Arcane itself is bootstrapped manually with Docker Compose.
 Do not register Arcane as an application GitOps project.
 Arcane agents are also manually bootstrapped; keep them out of application inventories.
@@ -31,7 +27,6 @@ Preserve the live network during adoption. GMK Caddy still owns its own network.
 - `opentofu/backends/`: committed, non-secret partial backend configuration.
 - `opentofu/arcane/`: OpenTofu root for Arcane-managed application resources.
 - `templates/arcane/`: active reusable Compose template source.
-- `docs/portainer-retirement.md`: completed state cleanup and remaining host teardown.
 - `Dockerfiles/`: custom image definitions.
 - `ansible/`: host bootstrap playbooks.
 - `.github/`: Renovate, Trivy, and notification automation.
@@ -41,7 +36,7 @@ Preserve the live network during adoption. GMK Caddy still owns its own network.
 - Do not commit secrets, tokens, API keys, passwords, private endpoints, or real local credentials.
 - Do not edit or expose ignored local files such as `*.tfvars`, `*.tfstate`, `.terraform/`, crash logs, or backup state files.
 - Treat Infisical as the source of truth for stack secrets.
-- Do not run `tofu apply`, `tofu import`, state migration commands, or Portainer-changing commands unless the user explicitly asks.
+- Do not run `tofu apply`, `tofu import`, state migration commands, or live infrastructure-changing commands unless the user explicitly asks.
 - Do not change hostnames, stack names, published ports, persistent volume names, static IPs, or network names casually; these may be live infrastructure contracts.
 - Preserve existing image digest pins when updating image tags unless the task is specifically about dependency updates.
 - Avoid broad refactors. Keep changes scoped to the requested stack, module, or workflow.
@@ -51,7 +46,7 @@ Preserve the live network during adoption. GMK Caddy still owns its own network.
 When adding or changing a Compose stack:
 
 1. Edit the stack file under `hosts/<host>/<app>/compose.yml`.
-2. Ensure the matching application entry exists in `opentofu/arcane/stacks.<host>.tofu`. Manually bootstrapped managers and agents are exceptions. Do not add applications back to the retired Portainer inventories. Keep secrets in Infisical, not the committed inventories.
+2. Ensure the matching application entry exists in `opentofu/arcane/stacks.<host>.tofu`. Manually bootstrapped managers and agents are exceptions. Keep secrets in Infisical, not the committed inventories.
 3. Keep `compose_path` aligned with the actual Compose path.
 4. Use environment variable references for secrets instead of literal secret values.
 5. Prefer explicit resource limits, `restart: unless-stopped`, and `security_opt: no-new-privileges:true` when compatible.

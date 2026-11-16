@@ -62,7 +62,6 @@ dockerhub_registries = {
 # stacks.6194cicero-raspberrypi.tofu
 # stacks.6194cicero-gmk-g3.tofu
 # All migrated applications, including both Caddy and Pi-hole stacks, are here.
-# Portainer retirement is documented in ../../docs/portainer-retirement.md.
 # Optional compatibility input for additional stacks or full-entry overrides:
 gitops_stacks = {}
 

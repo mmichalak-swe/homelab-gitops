@@ -40,11 +40,11 @@ resource "arcane_gitops_sync" "stacks" {
 
     precondition {
       condition = (
-        !contains(["arcane", "arcane-agent", "portainer"], lower(trimspace(each.value.name))) &&
-        !can(regex("(^|/)(arcane|arcane-agent|portainer)(/|$)", lower(each.key))) &&
-        !can(regex("(^|/)(arcane|arcane-agent|portainer)(/|$)", lower(replace(coalesce(each.value.compose_path, "hosts/${each.key}/compose.yml"), "\\", "/"))))
+        !contains(["arcane", "arcane-agent"], lower(trimspace(each.value.name))) &&
+        !can(regex("(^|/)(arcane|arcane-agent)(/|$)", lower(each.key))) &&
+        !can(regex("(^|/)(arcane|arcane-agent)(/|$)", lower(replace(coalesce(each.value.compose_path, "hosts/${each.key}/compose.yml"), "\\", "/"))))
       )
-      error_message = "Arcane's manager/agents are manually bootstrapped, and Portainer is retired; their names and Compose paths must not appear in the application inventory."
+      error_message = "Arcane's manager/agents are manually bootstrapped; their names and Compose paths must not appear in the application inventory."
     }
 
     precondition {

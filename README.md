@@ -1,8 +1,7 @@
 # homelab-gitops
 
 Docker Compose homelab infrastructure managed through Arcane, OpenTofu and
-Infisical. All application stacks have migrated from Portainer, including
-Caddy and Pi-hole/Unbound on both hosts.
+Infisical, including Caddy and Pi-hole/Unbound on both hosts.
 
 ## Deployment model
 
@@ -14,14 +13,12 @@ The same root manages registry credentials and the reusable Compose template.
 
 Arcane's manager on the Pi and its agent on GMK, each with a LinuxServer socket
 proxy, are bootstrapped manually. They must not manage their own Compose files
-as application GitOps projects. Follow the [Arcane setup guide](opentofu/arcane/README.md)
-and [GMK agent guide](hosts/6194cicero-gmk-g3/arcane-agent/README.md).
+as application GitOps projects.
 
 Arcane's bootstrap Compose file owns the Pi's shared `caddy-net` definition;
 the applications consume it as external.
-Preserve the existing network during adoption. The
-[Pi network guide](hosts/6194cicero-raspberrypi/README.md) documents the handover
-and fresh-host bootstrap. GMK Caddy continues to own its own network.
+Preserve the existing network during adoption. GMK Caddy continues to own its
+own network.
 
 ## Repository structure
 
@@ -33,7 +30,6 @@ and fresh-host bootstrap. GMK Caddy continues to own its own network.
 | `opentofu/aws/iam-roles-anywhere/` | AWS authentication infrastructure |
 | `opentofu/bootstrap/state-backend/` | Shared S3 state bucket ownership |
 | `opentofu/backends/` | Non-secret partial backend configuration |
-| `docs/portainer-retirement.md` | Retirement status and final host cleanup |
 | `Dockerfiles/` | Custom image definitions |
 | `ansible/` | Host bootstrap playbooks |
 | `.github/` | Dependency updates, image scanning and notifications |
@@ -61,8 +57,7 @@ All roots use `opentofu/backends/homelab.s3.tfbackend` for the shared bucket and
 region, with separate state keys in their own backend blocks. Arcane uses
 `arcane/terraform.tfstate`.
 
-The state bucket remains shared infrastructure even though its existing name
-contains `portainer`. Its ownership stays in the
+The state bucket remains shared infrastructure. Its ownership stays in the
 [state-backend root](opentofu/bootstrap/state-backend/README.md). AWS IAM Roles
 Anywhere has its own [setup guide](opentofu/aws/iam-roles-anywhere/README.md).
 
@@ -84,11 +79,3 @@ image changes through Git. The `volume-backup` experiment remains stopped.
 
 State and Arcane project files contain secrets. Protect their storage and
 backups; never commit credentials or generated environment files.
-
-## Portainer retirement
-
-Portainer's remaining template and registry resources have been destroyed, and
-its state is empty. Its OpenTofu root, shared module, template and bootstrap
-Compose file are removed. The shared S3 bucket and Arcane's state are retained.
-See the [retirement record and host cleanup](docs/portainer-retirement.md) for
-the remaining manual container/access cleanup, which preserves `caddy-net`.

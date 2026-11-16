@@ -13,13 +13,10 @@ All roots use the shared non-secret partial backend configuration at
 ordinary input variables or outputs because the backend is initialized before
 the rest of the configuration. AWS credentials remain outside this file.
 
-This root is the sole owner of the bucket and its bucket-wide settings. The
-bucket remains in use after Portainer retirement, despite its legacy name.
-Retain it and the Arcane/AWS states; an empty retired Portainer state does not
-justify deleting the bucket or changing active state keys.
-The `portainer/terraform.tfstate` object is now empty and retained as a retirement
-record; its protected version history is also retained. The Portainer OpenTofu
-root has been removed. No bucket-wide cleanup is part of that retirement.
+This root is the sole owner of the bucket and its bucket-wide settings.
+Preserve the existing bucket, active state keys and protected version history.
+Removing an application's configuration does not authorize deleting the
+shared bucket or other roots' state.
 
 ## Bootstrap constraint
 
