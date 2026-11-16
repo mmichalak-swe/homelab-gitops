@@ -13,7 +13,7 @@ terraform {
 
   required_providers {
     arcane = {
-      source  = "registry.terraform.io/hellscrimson/arcane"
+      source  = "registry.opentofu.org/hellscrimson/arcane"
       version = "1.6.0"
     }
 
