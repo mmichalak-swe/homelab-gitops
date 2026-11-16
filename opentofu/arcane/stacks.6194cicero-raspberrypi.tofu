@@ -1,15 +1,66 @@
 locals {
   stacks_6194cicero_raspberrypi = {
-    # Example: enable only after handing Homer over from Portainer.
-    # Creation performs an initial Git sync even with auto_sync = false.
-    # "6194cicero-raspberrypi/homer" = {
-    #   name                  = "homer" # Preserve the existing Compose project name.
-    #   environment_id        = "0"     # The manager's local Docker environment.
-    #   compose_path          = "hosts/6194cicero-raspberrypi/homer/compose.yml"
-    #   auto_sync             = false   # Enable after verifying the first deployment.
-    #   sync_interval_minutes = 60
-    #   start_project         = false
-    #   infisical_enabled     = false   # Homer needs no injected environment values.
-    # }
+    "6194cicero-raspberrypi/authelia" = {
+      name              = "authelia"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/authelia/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/beszel" = {
+      name              = "beszel"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/beszel/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/caddy" = {
+      name              = "caddy"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/caddy/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/homer" = {
+      name              = "homer"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/homer/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/pihole" = {
+      name              = "pihole"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/pihole/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/vaultwarden" = {
+      name              = "vaultwarden"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/vaultwarden/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
+
+    "6194cicero-raspberrypi/wireguard-ls" = {
+      name              = "wireguard-ls"
+      environment_id    = "0"
+      compose_path      = "hosts/6194cicero-raspberrypi/wireguard/compose.yml"
+      auto_sync         = true
+      start_project     = true
+      infisical_enabled = true
+    }
   }
 }

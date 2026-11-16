@@ -1,156 +1,94 @@
 # homelab-gitops
 
-Declarative homelab infrastructure for Docker Compose applications managed with Portainer, OpenTofu, and Infisical.
+Docker Compose homelab infrastructure managed through Arcane, OpenTofu and
+Infisical. All application stacks have migrated from Portainer, including
+Caddy and Pi-hole/Unbound on both hosts.
 
-## Purpose
+## Deployment model
 
-This repository is the source of truth for my homelab container deployments. Application stacks are defined as Docker Compose files under `hosts/`, and Portainer deploys those stacks from this Git repository.
+Application Compose files live at `hosts/<host>/<app>/compose.yml`. OpenTofu in
+`opentofu/arcane` manages the shared Git repository, per-application GitOps syncs,
+environment settings and GMK's environment registration. The host inventories
+are `opentofu/arcane/stacks.<host>.tofu`.
+The same root manages registry credentials and the reusable Compose template.
 
-OpenTofu manages Portainer objects such as Git-backed stacks, registries, templates, and stack environment values. Infisical is the source of truth for secrets that need to be injected into Portainer stack configuration.
+Arcane's manager on the Pi and its agent on GMK, each with a LinuxServer socket
+proxy, are bootstrapped manually. They must not manage their own Compose files
+as application GitOps projects. Follow the [Arcane setup guide](opentofu/arcane/README.md)
+and [GMK agent guide](hosts/6194cicero-gmk-g3/arcane-agent/README.md).
 
-The goal is a lightweight GitOps workflow without Kubernetes: changes are reviewed in Git, applied through Portainer, and kept reproducible across hosts.
+Arcane's bootstrap Compose file owns the Pi's shared `caddy-net` definition;
+the applications consume it as external.
+Preserve the existing network during adoption. The
+[Pi network guide](hosts/6194cicero-raspberrypi/README.md) documents the handover
+and fresh-host bootstrap. GMK Caddy continues to own its own network.
 
-## Repository Structure
+## Repository structure
 
-```text
-.
-├── Justfile                           # Short commands for each OpenTofu root
-├── hosts/
-│   ├── <host>/
-│   │   ├── <app>/compose.yml        # Per-host Docker Compose stacks
-│   │   └── daemon.json              # Host Docker daemon config
-│   ├── 6194cicero-gmk-g3/
-│   └── 6194cicero-raspberrypi/
-├── opentofu/
-│   ├── aws/
-│   │   └── iam-roles-anywhere/      # AWS trust anchor, roles, profiles, and root CA certificate
-│   ├── arcane/                      # Arcane settings, Git repository and application GitOps syncs
-│   ├── backends/
-│   │   └── homelab.s3.tfbackend     # Shared non-secret backend configuration
-│   ├── bootstrap/
-│   │   └── state-backend/           # Shared OpenTofu state bucket
-│   ├── modules/
-│   │   └── portainer-stack/         # Shared Portainer stack module
-│   └── portainer/                   # OpenTofu root for Portainer-managed objects
-├── templates/
-│   └── portainer/                   # Portainer custom template sources
-├── Dockerfiles/
-│   ├── caddy/                       # Custom Caddy image
-│   └── drawio/                      # Custom Draw.io image
-├── ansible/
-│   └── rpi-initial-config.yml       # Initial Raspberry Pi host setup
-└── .github/
-    ├── renovate.json
-    └── workflows/                   # Dependency and security automation
-```
-
-## Stack Deployment Model
-
-Each application stack lives under:
-
-```text
-hosts/<host>/<app>/compose.yml
-```
-
-The Portainer OpenTofu root maps those compose files to Git-backed Portainer stacks. Portainer then pulls from this repository and applies changes according to each stack's settings.
-
-Host-specific stack inventory lives in:
-
-```text
-opentofu/portainer/stacks.<host>.tofu
-```
-
-Shared stack behavior lives in:
-
-```text
-opentofu/portainer/stacks.tofu
-opentofu/modules/portainer-stack/
-```
-
-Arcane is being introduced on rpi4 (`6194cicero-raspberrypi`). Its manager and
-socket proxy are bootstrapped manually with Docker Compose, just like Portainer.
-`opentofu/arcane` uses HellsCrimson's Terraform provider to configure the running
-manager, register this repository and manage application GitOps syncs. Existing
-application stacks remain with Portainer until explicitly handed over. Follow
-the [Arcane setup guide](opentofu/arcane/README.md) for Infisical values, bootstrap
-instructions and per-stack GitOps configuration.
-
-Arcane's host inventories live in `opentofu/arcane/stacks.<host>.tofu`, with a
-commented example for each host. `opentofu/arcane/stacks.tofu` merges them and
-applies shared defaults before creating GitOps syncs.
+| Path | Purpose |
+| --- | --- |
+| `hosts/` | Per-host Compose files and Docker daemon configuration |
+| `opentofu/arcane/` | Active application and environment management |
+| `templates/arcane/` | Reusable Compose template managed through OpenTofu |
+| `opentofu/aws/iam-roles-anywhere/` | AWS authentication infrastructure |
+| `opentofu/bootstrap/state-backend/` | Shared S3 state bucket ownership |
+| `opentofu/backends/` | Non-secret partial backend configuration |
+| `docs/portainer-retirement.md` | Retirement status and final host cleanup |
+| `Dockerfiles/` | Custom image definitions |
+| `ansible/` | Host bootstrap playbooks |
+| `.github/` | Dependency updates, image scanning and notifications |
 
 ## OpenTofu
 
-### Prerequisites
+Install OpenTofu and `just`. Configure AWS access to the shared state bucket and
+Infisical authentication through your normal local credential workflow.
+Use `opentofu/arcane/terraform.tfvars.example` for the documented input shape;
+real local tfvars stay ignored.
 
-Install OpenTofu and `just`. AWS roots also require AWS CLI credentials with
-access to the shared state bucket and the resources managed by the selected
-root. The IAM Roles Anywhere client workflow additionally uses OpenSSL, `jq`,
-and the AWS IAM Roles Anywhere credential helper.
-
-### Operations
-
-Detailed setup and operation notes live in:
-
-```text
-opentofu/portainer/README.md
-opentofu/arcane/README.md
-opentofu/aws/iam-roles-anywhere/README.md
-opentofu/bootstrap/state-backend/README.md
-```
-
-Typical workflow:
+Run from the repository root:
 
 ```shell
-just init portainer
-just plan portainer
-just apply portainer
+just fmt
+just init arcane
+just validate arcane
+just plan arcane
+just apply arcane
 ```
 
-The repository `Justfile` accepts these root paths:
+The generic recipes also accept `aws/iam-roles-anywhere` and
+`bootstrap/state-backend`.
+All roots use `opentofu/backends/homelab.s3.tfbackend` for the shared bucket and
+region, with separate state keys in their own backend blocks. Arcane uses
+`arcane/terraform.tfstate`.
 
-```text
-portainer
-arcane
-aws/iam-roles-anywhere
-bootstrap/state-backend
-```
+The state bucket remains shared infrastructure even though its existing name
+contains `portainer`. Its ownership stays in the
+[state-backend root](opentofu/bootstrap/state-backend/README.md). AWS IAM Roles
+Anywhere has its own [setup guide](opentofu/aws/iam-roles-anywhere/README.md).
 
-All roots reuse the committed, non-secret backend configuration at
-`opentofu/backends/homelab.s3.tfbackend`. It contains only the state bucket name
-and AWS region; credentials must come from the AWS CLI configuration or
-environment. Each root's committed backend block selects its own state key.
+## Secrets and updates
 
-Use `opentofu/portainer/terraform.tfvars.example` as the starting point for local ignored configuration.
+Infisical remains the source of truth:
 
-AWS IAM Roles Anywhere has its own OpenTofu root and state under
-`opentofu/aws/iam-roles-anywhere/`. Its README documents local CA key handling,
-least-privilege role configuration, and initialization.
+- `/opentofu/arcane`: Arcane provider credentials, Git credentials and GMK's URL.
+- `/opentofu/arcane/dockerhub-registry-tokens`: registry tokens keyed by registry name.
+- `/hosts/<host>/<app>`: application environment values.
+- The manager and agent bootstrap folders under `/hosts`: values supplied
+  separately before running OpenTofu.
 
-The shared state bucket is managed independently under
-`opentofu/bootstrap/state-backend/`. All roots use the shared backend
-configuration for the bucket and region, while their committed backend blocks
-select distinct state object keys.
+Infisical changes require an OpenTofu apply and a controlled project deployment
+to refresh running containers. Git polling does not fetch updated secrets.
+Environment-wide automatic image updates and watchers are disabled; per-project
+Git polling follows the host inventories. Renovate continues to propose pinned
+image changes through Git. The `volume-backup` experiment remains stopped.
 
-### Secrets
+State and Arcane project files contain secrets. Protect their storage and
+backups; never commit credentials or generated environment files.
 
-Infisical stores provider credentials and application environment values for the
-Portainer and Arcane OpenTofu roots. Arcane's manually bootstrapped Compose
-deployment reads its environment separately, before the Arcane root is run.
+## Portainer retirement
 
-Primary Infisical paths:
-
-```text
-/opentofu/portainer
-/opentofu/portainer/dockerhub-registry-tokens
-/opentofu/arcane
-/hosts/<host>/<app>
-```
-
-Local `*.tfvars` files are ignored and should only contain bootstrap values, local auth for OpenTofu runs, and temporary fallback values. Secrets still flow into OpenTofu state and the managers' configuration, so the state backend must be protected.
-
-The IAM Roles Anywhere root is an explicit local-only exception for its CA
-private key, as requested. Keep its ignored `local.auto.tfvars` at mode `0600`;
-because the key is consumed by the TLS provider, it also enters that root's
-encrypted remote state. Keep a protected offline backup of the key and secure
-the state bucket.
+Portainer's remaining template and registry resources have been destroyed, and
+its state is empty. Its OpenTofu root, shared module, template and bootstrap
+Compose file are removed. The shared S3 bucket and Arcane's state are retained.
+See the [retirement record and host cleanup](docs/portainer-retirement.md) for
+the remaining manual container/access cleanup, which preserves `caddy-net`.

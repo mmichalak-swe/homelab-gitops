@@ -2,14 +2,26 @@
 
 ## Repository Purpose
 
-This repo is the source of truth for a Docker Compose homelab managed through Portainer, OpenTofu, and Infisical.
+This repo is the source of truth for a Docker Compose homelab managed through Arcane, OpenTofu, and Infisical.
 
-Portainer deploys Git-backed stacks from `hosts/<host>/<app>/compose.yml`.
-OpenTofu in `opentofu/portainer` manages Portainer objects such as stacks, registries, custom templates, Git settings, and stack environment injection.
-Portainer and Arcane themselves are bootstrapped manually with Docker Compose.
-Do not register Arcane as a Portainer stack or as an Arcane GitOps project.
+Arcane deploys Git-backed projects from `hosts/<host>/<app>/compose.yml`.
+All applications, including Caddy and Pi-hole on both hosts, have migrated.
+Portainer's managed resources have been destroyed and its state is empty.
+Its OpenTofu root, module, template and bootstrap Compose file are removed.
+Remaining host teardown and access cleanup are documented in
+`docs/portainer-retirement.md`; do not recreate Portainer resources.
+Arcane itself is bootstrapped manually with Docker Compose.
+Do not register Arcane as an application GitOps project.
+Arcane agents are also manually bootstrapped; keep them out of application inventories.
 `opentofu/arcane` manages Arcane settings, the Git repository and explicitly
 selected application GitOps syncs, with secrets from Infisical.
+It also manages container registry credentials and the reusable Compose template
+under `templates/arcane`; keep registry tokens in Infisical.
+It also manages the optional GMK environment registration and, after the agent
+is online, its settings.
+The Pi's Arcane bootstrap owns the shared `caddy-net` definition; all Pi
+applications consume it as external.
+Preserve the live network during adoption. GMK Caddy still owns its own network.
 
 ## Important Directories
 
@@ -17,10 +29,9 @@ selected application GitOps syncs, with secrets from Infisical.
 - `opentofu/aws/iam-roles-anywhere/`: IAM Roles Anywhere trust anchor, profiles, and roles.
 - `opentofu/bootstrap/state-backend/`: shared S3 state-bucket ownership and settings.
 - `opentofu/backends/`: committed, non-secret partial backend configuration.
-- `opentofu/portainer/`: OpenTofu root for Portainer-managed resources.
 - `opentofu/arcane/`: OpenTofu root for Arcane-managed application resources.
-- `opentofu/modules/portainer-stack/`: shared stack module.
-- `templates/portainer/`: Portainer custom template sources.
+- `templates/arcane/`: active reusable Compose template source.
+- `docs/portainer-retirement.md`: completed state cleanup and remaining host teardown.
 - `Dockerfiles/`: custom image definitions.
 - `ansible/`: host bootstrap playbooks.
 - `.github/`: Renovate, Trivy, and notification automation.
@@ -40,8 +51,8 @@ selected application GitOps syncs, with secrets from Infisical.
 When adding or changing a Compose stack:
 
 1. Edit the stack file under `hosts/<host>/<app>/compose.yml`.
-2. For Portainer-managed applications, ensure the matching stack entry exists in `opentofu/portainer/stacks.<host>.tofu`. Manually bootstrapped managers are exceptions. Applications handed over to Arcane use `opentofu/arcane/stacks.<host>.tofu`; avoid management by both roots. Keep secrets in Infisical, not the committed inventories.
-3. Keep `file_path_in_repository` (Portainer) or `compose_path` (Arcane) aligned with the actual Compose path.
+2. Ensure the matching application entry exists in `opentofu/arcane/stacks.<host>.tofu`. Manually bootstrapped managers and agents are exceptions. Do not add applications back to the retired Portainer inventories. Keep secrets in Infisical, not the committed inventories.
+3. Keep `compose_path` aligned with the actual Compose path.
 4. Use environment variable references for secrets instead of literal secret values.
 5. Prefer explicit resource limits, `restart: unless-stopped`, and `security_opt: no-new-privileges:true` when compatible.
 6. Be careful with `container_name`; existing stacks use it, so preserve established naming unless intentionally changing it.
@@ -55,17 +66,17 @@ Useful validation commands:
 
 ```shell
 just fmt
-just init portainer
-just validate portainer
-just plan portainer
+just init arcane
+just validate arcane
+just plan arcane
 ```
 
 Notes:
 
-- `just validate` and `just plan` may require local provider configuration and Infisical/Portainer credentials.
+- `just validate` and `just plan` may require local provider configuration and Infisical/Arcane credentials.
 - `just fmt` checks tracked and unignored OpenTofu files without reading ignored local tfvars.
 - If validation fails because local secrets or provider auth are unavailable, report that clearly instead of inventing values.
-- Use `opentofu/portainer/terraform.tfvars.example` for documented variable shape only; do not modify ignored local tfvars files unless explicitly asked.
+- Use `opentofu/arcane/terraform.tfvars.example` for documented variable shape only; do not modify ignored local tfvars files unless explicitly asked.
 
 ## Compose Validation
 

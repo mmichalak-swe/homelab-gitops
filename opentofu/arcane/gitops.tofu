@@ -1,5 +1,5 @@
 # Each sync follows one application's Compose file in the shared repository.
-# Arcane itself stays outside this inventory and is started manually on the Pi.
+# Arcane's manager and agents stay outside this inventory and start manually.
 resource "arcane_gitops_sync" "stacks" {
   for_each = local.gitops_stacks
 
@@ -27,7 +27,7 @@ resource "arcane_gitops_sync" "stacks" {
   )
 
   # Disabling manager-wide updates/pruning must precede application syncs.
-  depends_on = [arcane_settings.rpi4]
+  depends_on = [arcane_settings.rpi4, arcane_settings.gmk]
 
   lifecycle {
     # The provider deletes the linked project when destroying its GitOps sync.
@@ -40,11 +40,11 @@ resource "arcane_gitops_sync" "stacks" {
 
     precondition {
       condition = (
-        !contains(["arcane", "portainer"], lower(trimspace(each.value.name))) &&
-        !can(regex("(^|/)(arcane|portainer)(/|$)", lower(each.key))) &&
-        !can(regex("(^|/)(arcane|portainer)(/|$)", lower(replace(coalesce(each.value.compose_path, "hosts/${each.key}/compose.yml"), "\\", "/"))))
+        !contains(["arcane", "arcane-agent", "portainer"], lower(trimspace(each.value.name))) &&
+        !can(regex("(^|/)(arcane|arcane-agent|portainer)(/|$)", lower(each.key))) &&
+        !can(regex("(^|/)(arcane|arcane-agent|portainer)(/|$)", lower(replace(coalesce(each.value.compose_path, "hosts/${each.key}/compose.yml"), "\\", "/"))))
       )
-      error_message = "Arcane and Portainer are manually bootstrapped managers; their names and Compose paths must not appear in the application inventory."
+      error_message = "Arcane's manager/agents are manually bootstrapped, and Portainer is retired; their names and Compose paths must not appear in the application inventory."
     }
 
     precondition {

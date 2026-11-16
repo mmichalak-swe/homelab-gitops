@@ -1,7 +1,13 @@
 networks:
   caddy-net:
-    name: caddy-net
+    driver: bridge
     external: true
+    ipam:
+      config:
+        - gateway: 172.18.0.1
+          ip_range: 172.18.0.0/24
+          subnet: 172.18.0.0/24
+    name: caddy-net
   proxy-net:
     driver: bridge
     internal: true
@@ -10,7 +16,7 @@ networks:
         - gateway: 172.18.5.1
           ip_range: 172.18.5.0/24
           subnet: 172.18.5.0/24
-    name: arcane_sp_net
+    name: arcane-sp-net
 
 services:
   arcane:
@@ -40,7 +46,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    image: ghcr.io/getarcaneapp/manager:v2.16.1@sha256:e211067a6808c1598175141cd19c48eab874a24b5b649be3ddcb3894db7e73cd
+    image: ghcr.io/getarcaneapp/manager:v2.17.3@sha256:2e0dc9f5ef03599181a49baf6470055d82e24d9cb15bbc62498ea642c0f882a7
     networks:
       caddy-net:
         ipv4_address: 172.18.0.30
@@ -50,12 +56,6 @@ services:
       - no-new-privileges:true
     volumes:
       - arcane_data:/app/data
-      # Keep project paths identical on the host and in Arcane for bind mounts.
-      - type: bind
-        source: ${PROJECTS_DIRECTORY:?Set PROJECTS_DIRECTORY to an absolute host path}
-        target: ${PROJECTS_DIRECTORY:?Set PROJECTS_DIRECTORY to an absolute host path}
-        bind:
-          create_host_path: false
 
   arcane-socket-proxy:
     cap_drop:
@@ -103,7 +103,7 @@ services:
       retries: 5
       start_period: 10s
     hostname: arcane-socket-proxy
-    image: linuxserver/socket-proxy:3.4.6@sha256:362cadf55b3c7920189347d0f4d60b389e2f80e929581bf10793f2371aab41e5
+    image: linuxserver/socket-proxy:3.4.7@sha256:4e5e59efd3338205561c54262581992036e5a36ccca97d487b1d4ec41f9adc58
     networks:
       - proxy-net
     read_only: true

@@ -53,7 +53,7 @@ services:
         gw_priority: 0
     ports:
       - target: 51820
-        published: "${SERVERPORT}"
+        published: "${SERVERPORT:?Set SERVERPORT from Infisical in the Arcane project environment}"
         protocol: udp
     read_only: true
     restart: unless-stopped

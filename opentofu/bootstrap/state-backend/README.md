@@ -1,9 +1,9 @@
 # Shared OpenTofu State Bucket
 
-This OpenTofu root owns the existing S3 bucket and its bucket-wide security settings. Its lifecycle rule applies to every object because the bucket is dedicated to OpenTofu state. Portainer, IAM Roles Anywhere, and this root store separate states in the same bucket:
+This OpenTofu root owns the existing S3 bucket and its bucket-wide security settings. Its lifecycle rule applies to every object because the bucket is dedicated to OpenTofu state. Arcane, IAM Roles Anywhere and this root store separate states in the same bucket:
 
 ```text
-portainer/terraform.tfstate
+arcane/terraform.tfstate
 aws/iam-roles-anywhere/terraform.tfstate
 aws/bootstrap/terraform.tfstate
 ```
@@ -13,7 +13,13 @@ All roots use the shared non-secret partial backend configuration at
 ordinary input variables or outputs because the backend is initialized before
 the rest of the configuration. AWS credentials remain outside this file.
 
-This root is the sole owner of the bucket and its bucket-wide settings.
+This root is the sole owner of the bucket and its bucket-wide settings. The
+bucket remains in use after Portainer retirement, despite its legacy name.
+Retain it and the Arcane/AWS states; an empty retired Portainer state does not
+justify deleting the bucket or changing active state keys.
+The `portainer/terraform.tfstate` object is now empty and retained as a retirement
+record; its protected version history is also retained. The Portainer OpenTofu
+root has been removed. No bucket-wide cleanup is part of that retirement.
 
 ## Bootstrap constraint
 
@@ -35,7 +41,7 @@ From the repository root, the `Justfile` initializes each root with the same
 shared backend file. The committed backend blocks provide distinct keys:
 
 ```shell
-just init portainer
+just init arcane
 just init aws/iam-roles-anywhere
 just init bootstrap/state-backend
 ```

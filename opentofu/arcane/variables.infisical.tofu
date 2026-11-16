@@ -43,7 +43,7 @@ variable "infisical_env_slug" {
 }
 
 variable "infisical_arcane_config_path" {
-  description = "Infisical folder containing arcane_endpoint, arcane_api_key and optional Git credentials."
+  description = "Infisical folder containing arcane_endpoint, arcane_api_key, optional Git credentials and gmk_agent_api_url when GMK is enabled."
   type        = string
   default     = "/opentofu/arcane"
 }

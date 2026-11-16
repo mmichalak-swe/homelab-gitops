@@ -5,6 +5,12 @@ infisical_env_slug   = "prod"
 # Provider secrets are read from /opentofu/arcane in Infisical:
 # arcane_endpoint = https://<arcane-hostname>/api
 # arcane_api_key  = an API key created in the manually bootstrapped Arcane UI
+# gmk_agent_api_url = http://<gmk-lan-ip>:3553 (required when enabling GMK below)
+
+# First enable registration and apply, then store gmk_agent_pairing_token in
+# Infisical and start GMK's agent manually. Enable settings only once it is online.
+gmk_environment_enabled = false
+gmk_settings_enabled    = false
 
 # For self-hosted Infisical only:
 # infisical_host = "https://infisical.example.com"
@@ -27,10 +33,36 @@ infisical_env_slug   = "prod"
 
 repository_branch = "main"
 
-# Application definitions and commented examples live in:
+# Supply the real registry names, URLs and usernames.
+# Keep tokens in /opentofu/arcane/dockerhub-registry-tokens in Infisical, using
+# these map keys as secret names.
+dockerhub_registries = {
+  dockerhub_personal = {
+    name               = "Docker Hub - Primary"
+    url                = "docker.io"
+    username           = "your-dockerhub-username"
+    credential_version = 1
+  }
+  dockerhub_dhi = {
+    name               = "Docker Hub - DHI"
+    url                = "your-existing-dhi-registry-host"
+    username           = "your-dhi-registry-username"
+    credential_version = 1
+  }
+}
+# Increment credential_version when rotating a token or changing its registry URL.
+# Optional non-default secret folder:
+# infisical_dockerhub_registry_tokens_path = "/opentofu/arcane/dockerhub-registry-tokens"
+
+# Set per-app branch overrides in the Arcane host entry's branch field, without
+# refs/heads/. The stopped volume-backup experiment
+# already selects add-docker-volume-backup-test-tzdata in its host entry.
+
+# Application definitions live in:
 # stacks.6194cicero-raspberrypi.tofu
 # stacks.6194cicero-gmk-g3.tofu
-# Enable an existing Portainer application only after preparing its handover.
+# All migrated applications, including both Caddy and Pi-hole stacks, are here.
+# Portainer retirement is documented in ../../docs/portainer-retirement.md.
 # Optional compatibility input for additional stacks or full-entry overrides:
 gitops_stacks = {}
 
@@ -38,5 +70,6 @@ gitops_stacks = {}
 # /hosts/<host>/<app> in infisical_env_slug. Optional per-stack overrides:
 # infisical_env_slug    = "dev"
 # infisical_folder_path = "/hosts/another-path"
+# Keep custom environment/path overrides in these host entries.
 # Set infisical_enabled = false for applications without a secrets folder.
 # Non-secret fallback values can be supplied via stack_env = { "host/app" = {} }.

@@ -8,7 +8,7 @@ backend_config := tofu_dir + "/backends/homelab.s3.tfbackend"
 default:
     @just --list
 
-# Initialize an OpenTofu root, for example: just init portainer
+# Initialize an OpenTofu root, for example: just init arcane
 init root:
     tofu -chdir="{{ tofu_dir }}/{{ root }}" init -backend-config="{{ backend_config }}"
 
@@ -36,10 +36,10 @@ fmt:
 # Initialize, validate, and plan one root.
 check root: (init root) (validate root) (plan root)
 
-# Convenience aliases for the Portainer root.
-init-portainer: (init "portainer")
-plan-portainer: (plan "portainer")
-apply-portainer: (apply "portainer")
+# Convenience aliases for the Arcane root.
+init-arcane: (init "arcane")
+plan-arcane: (plan "arcane")
+apply-arcane: (apply "arcane")
 
 # Convenience aliases for the IAM Roles Anywhere root.
 init-roles-anywhere: (init "aws/iam-roles-anywhere")
