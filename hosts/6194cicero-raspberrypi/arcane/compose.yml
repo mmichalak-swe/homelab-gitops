@@ -1,6 +1,7 @@
 networks:
   caddy-net:
     driver: bridge
+    external: true
     ipam:
       config:
         - gateway: 172.18.0.1
@@ -12,61 +13,69 @@ networks:
     internal: true
     ipam:
       config:
-        - gateway: 172.18.1.1
-          ip_range: 172.18.1.0/24
-          subnet: 172.18.1.0/24
-    name: portainer_sp_net
+        - gateway: 172.18.5.1
+          ip_range: 172.18.5.0/24
+          subnet: 172.18.5.0/24
+    name: arcane-sp-net
 
 services:
-  portainer:
-    cap_drop:
-      - ALL
-    command: -H tcp://portainer-socket-proxy:2375
-    container_name: portainer
-    dns: 172.18.0.2
+  arcane:
+    container_name: arcane
     depends_on:
-      portainer-socket-proxy:
+      arcane-socket-proxy:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      - APP_URL=${APP_URL}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - DOCKER_HOST=${DOCKER_HOST}
+      - PROJECTS_DIRECTORY=${PROJECTS_DIRECTORY}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     expose:
-      - 9000
+      - 3552
+    # ports:
+    #   - "3552:3552"
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:9000 || exit 1"]
+      test: ["CMD", "/app/arcane", "health", "--timeout", "2s"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    hostname: portainer
-    image: portainer/portainer-ce:2.45.3-alpine@sha256:3d2e116d0aab38f13ee2b893e4fd931e69a09574eee0b597711a68d76754cce1
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    image: ghcr.io/getarcaneapp/manager:v2.17.3@sha256:2e0dc9f5ef03599181a49baf6470055d82e24d9cb15bbc62498ea642c0f882a7
     networks:
       caddy-net:
-        ipv4_address: 172.18.0.20
+        ipv4_address: 172.18.0.30
       proxy-net:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    tmpfs:
-      - /tmp:mode=1777,noexec,nosuid,nodev
-      - /run:mode=0755,nosuid,nodev
-      - /var/run:mode=0755,nosuid,nodev
-    user: "1000:1000"
     volumes:
-      - portainer_data:/data
+      - arcane_data:/app/data
 
-  portainer-socket-proxy:
+  arcane-socket-proxy:
     cap_drop:
       - ALL
-    container_name: portainer-socket-proxy
+    container_name: arcane-socket-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     environment:
       - ALLOW_LOGS=1
-      - AUTH=0
+      - AUTH=1
       - BUILD=0
       - COMMIT=0
       - CONFIGS=0
       - CONTAINERS=1
       - DISABLE_IPV6=0
-      - DISTRIBUTION=0
+      - DISTRIBUTION=1
       - EVENTS=1
-      - EXEC=0
+      - EXEC=1
       - IMAGES=1
       - INFO=1
       - LOG_LEVEL=info
@@ -89,22 +98,23 @@ services:
       - 2375
     healthcheck:
       test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:2375/_ping || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 10s
-    hostname: portainer-socket-proxy
-    image: linuxserver/socket-proxy:3.4.7@sha256:823dda971e9a3951257eb251586a804199819fe1587c35faa43adc7b52a2ff16
+    hostname: arcane-socket-proxy
+    image: linuxserver/socket-proxy:3.4.7@sha256:4e5e59efd3338205561c54262581992036e5a36ccca97d487b1d4ec41f9adc58
     networks:
-      proxy-net:
+      - proxy-net
     read_only: true
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     tmpfs:
-      - /run:exec
+      - /run:rw,noexec,nosuid,nodev
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
 volumes:
-  portainer_data:
+  arcane_data:
+    name: arcane_data

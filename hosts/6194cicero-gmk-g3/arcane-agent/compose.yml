@@ -1,0 +1,119 @@
+networks:
+  arcane-agent-net:
+    driver: bridge
+    ipam:
+      config:
+        - gateway: 172.19.10.1
+          ip_range: 172.19.10.0/24
+          subnet: 172.19.10.0/24
+    name: arcane-agent-net
+  proxy-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - gateway: 172.19.2.1
+          ip_range: 172.19.2.0/24
+          subnet: 172.19.2.0/24
+    name: arcane-sp-net
+
+services:
+  arcane-agent:
+    container_name: arcane-agent
+    depends_on:
+      arcane-agent-socket-proxy:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment:
+      - AGENT_MODE=true
+      - AGENT_TOKEN=${AGENT_TOKEN:?Set AGENT_TOKEN from Infisical}
+      - MANAGER_API_URL=${MANAGER_API_URL:?Set the reachable Arcane manager URL}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?Set a persistent encryption key from Infisical}
+      - DOCKER_HOST=tcp://arcane-agent-socket-proxy:2375
+      - PROJECTS_DIRECTORY=${PROJECTS_DIRECTORY}
+      - PORT=3553
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    healthcheck:
+      test: ["CMD", "/app/arcane-agent", "health", "--timeout", "2s"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    image: ghcr.io/getarcaneapp/agent:v2.17.3@sha256:3005364d5aa603a8fe8b51bee26413b473965c3c2dc6c152b0016dd1cdda1cf4
+    networks:
+      arcane-agent-net:
+      proxy-net:
+    ports:
+      - "${AGENT_BIND_IP:?Set AGENT_BIND_IP to the GMK LAN address}:3553:3553"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - arcane_agent_data:/app/data
+
+  arcane-agent-socket-proxy:
+    cap_drop:
+      - ALL
+    container_name: arcane-agent-socket-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    environment:
+      - ALLOW_LOGS=1
+      - AUTH=1
+      - BUILD=0
+      - COMMIT=0
+      - CONFIGS=0
+      - CONTAINERS=1
+      - DISABLE_IPV6=0
+      - DISTRIBUTION=1
+      - EVENTS=1
+      - EXEC=1
+      - IMAGES=1
+      - INFO=1
+      - LOG_LEVEL=info
+      - NETWORKS=1
+      - NODES=0
+      - PING=1
+      - PLUGINS=0
+      - POST=1
+      - SECRETS=0
+      - SERVICES=0
+      - SESSION=0
+      - SOCKET_PATH=/var/run/docker.sock
+      - SWARM=0
+      - SYSTEM=1
+      - TASKS=0
+      - TZ=${TZ}
+      - VERSION=1
+      - VOLUMES=1
+    expose:
+      - 2375
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --no-verbose http://localhost:2375/_ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    hostname: arcane-agent-socket-proxy
+    image: linuxserver/socket-proxy:3.4.7@sha256:823dda971e9a3951257eb251586a804199819fe1587c35faa43adc7b52a2ff16
+    networks:
+      - proxy-net
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /run:rw,noexec,nosuid,nodev
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  arcane_agent_data:
+    name: arcane_agent_data
