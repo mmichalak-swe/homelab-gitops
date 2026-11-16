@@ -91,7 +91,7 @@ services:
       - SWARM=0
       - SYSTEM=1
       - TASKS=0
-      - TZ=${TZ:-America/New_York}
+      - TZ=${TZ}
       - VERSION=1
       - VOLUMES=1
     expose:
