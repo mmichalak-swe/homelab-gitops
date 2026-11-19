@@ -44,7 +44,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    image: ghcr.io/getarcaneapp/agent:v2.17.3@sha256:3005364d5aa603a8fe8b51bee26413b473965c3c2dc6c152b0016dd1cdda1cf4
+    image: ghcr.io/getarcaneapp/agent:v3.1.0@sha256:b04f29138e60a4b64205ae1f4ba50b7718ef11174ef9972b5d8ec5b6ea580e04
     networks:
       arcane-agent-net:
       proxy-net:
