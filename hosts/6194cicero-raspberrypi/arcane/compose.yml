@@ -46,7 +46,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    image: ghcr.io/getarcaneapp/manager:v2.17.3@sha256:2e0dc9f5ef03599181a49baf6470055d82e24d9cb15bbc62498ea642c0f882a7
+    image: ghcr.io/getarcaneapp/manager:v3.1.0@sha256:4151e7bc42ddec87c2ce5534d7611297465e2b05e6472f12382073eeca878c8e
     networks:
       caddy-net:
         ipv4_address: 172.18.0.30
