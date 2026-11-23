@@ -14,7 +14,7 @@ terraform {
   required_providers {
     arcane = {
       source  = "registry.opentofu.org/hellscrimson/arcane"
-      version = "1.6.0"
+      version = "2.0.0"
     }
 
     infisical = {
