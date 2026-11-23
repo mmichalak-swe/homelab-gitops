@@ -72,7 +72,7 @@ services:
       retries: 3
       start_period: 30s
     hostname: unbound
-    image: klutchell/unbound:1.26.2@sha256:50cbeb32b5838a829a7226b19cb151f9535bd7f9f3190f950780f452fe807478
+    image: klutchell/unbound:1.26.2@sha256:de8e624f84337bdb2d16540c0b203d5df2a981180421cb50ab4212b67542d8b4
     networks:
       caddy-net:
         ipv4_address: 172.19.0.3
